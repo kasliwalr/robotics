@@ -12,6 +12,7 @@ This project details the design of an indoor mapper project. This is an ongoing 
 - max speed of 1 m/sec
 - rechargeable/non-rechargeable battery
 - remote controlling capability through Bluetooth/Wifi
+- data streaming capability
 - range finding accuracy +/5 cm
 - in-place 360 degree rotation
 - enough space to add jetson TK1/TX1, raspberry Pi, 32-bit uC
