@@ -26,7 +26,7 @@ This project details the design of an indoor mapper project. This is an ongoing 
 |Part Name|Qty|Unit Price ($)|Total Price ($)|
 |---------|---|----------|-----------|
 |Waffle Board|4|10.00|40.00|
-|Dynamixel XL430-W250-T|2|49.50|99.00|
+|[Dynamixel XL430-W250-T](http://www.robotis.us/x-series/?price_min=0&price_max=82&sort=featured)|2|49.50|99.00|
 
 
 ## Notes
