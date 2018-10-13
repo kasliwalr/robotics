@@ -28,6 +28,8 @@ This project details the design of an indoor mapper project. This is an ongoing 
 |Waffle Board|4|10.00|40.00|
 |[Dynamixel XL430-W250-T](http://www.robotis.us/x-series/?price_min=0&price_max=82&sort=featured)|2|49.50|99.00|
 |[RPLIDAR-A1](https://www.seeedstudio.com/RPLiDAR-A1M8-360-Degree-Laser-Scanner-Kit-12M-Range-p-3072.html)|1|99.00|99.00|
+|LiPo|1|50.00|50.00|
+|Caster|1|5.00|1|
 
 
 ## Notes
