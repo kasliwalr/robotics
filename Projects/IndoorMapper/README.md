@@ -21,6 +21,13 @@ This project details the design of an indoor mapper project. This is an ongoing 
 
 - Future capabilities: temperature sensing, voice recognition, facial recognition
 
+## BOM
+
+|Part Name|Qty|Unit Price ($)|Total Price ($)|
+|---------|---|----------|-----------|
+|Waffle Board|4|10|40|
+
+
 ## Notes
 - are vision+encoder based sensing sufficient for localization in indoor environments
 
