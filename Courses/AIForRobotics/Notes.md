@@ -39,6 +39,19 @@ Two most frequently cited limitations of probabilistic robotics
 2. need to approximate: computing exact posterior for continuous space is computationally intractable. Sometimes,
 one is fortunate in that the uncertainty can be approximated tightly with a compact parametric model (e.g., Gaussians). In other cases, such approximations are too crude to be of use, and more complicated representations must be employed.
 
+## Recursive Estimation
+At the core of probabilistic robotics is the idea of estimating state from sensor data. In simpler terms, **state estimation** addresses the problem of estimating quantities from sensor data that are not directly observable, but that can be inferred. Probabilistic state estimation algorithms compute belief distributions over possible world states.
+
+We will learn the basic vocabulary for state estimation and mathematical tools for doing state estimation from sensor data.
+Briefly, we learn probabilistic concepts employed in state estimation, then we cover formal model of robot-environment interaction and associated key terminology. Thirdly, we use Bayes' filter. Finally, we consider representational and computational issues that arise when implementing Bayes filters.
+
+### Basics Concepts of Probability
+In probabilisitc robotics, location of robot, sensor measurements, controls are treated as *random variables*. Probabilistic inference is the process of calculating the distributions that govern the random variables that are themselves derived from other random variables and observed data.
+
+We will use *p(x)* to denote *p(X=x)*. 
+
+
+
 
 ## Localization
 
