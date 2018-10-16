@@ -53,9 +53,86 @@ In probabilisitc robotics, location of robot, sensor measurements, controls are 
 
 ### Robot Environment Interaction
 Now we will understand the modeling of robot's interaction with its environment. The image below summarizes the interaction through an information flow diagram. 
-![robot env interaction](images/robot_env_interaction.png)
-Since the robot's sensors are not perfect, it can rely on them to sense where it is at the current moment. It needs to maintain a belief distribution map of the environment internally. It then performs some actions which may/may not affect the environment itself. It also senses the actions it has performed as well as the environment state through sensors, this information is fed back to update the belief distribution map.
 
+![robot_env_interaction](images/robot_env_interaction.png)
+
+Since the robot's sensors are not perfect, it can't rely on them to sense where it is at the current moment. It needs to maintain a belief distribution map of the environment internally. It cann perform some actions which may/may not affect the environment itself. It also senses the actions it has performed as well as the environment state through sensors, this information is fed back to update the belief distribution map.
+
+Let's start a formal description of the model. We begin by defining the terms in the model precisely
+
+#### State
+Environment are characterized by state. A state is a collection of variables that capture aspects of robot and its environment that can impact its future. We denote the state variables as *x*, this is general is a vector variable. To denote state at a certain time t, we use x<sub>t</sub>. State variables can be *dynamic* or *static*. The collection of dynamic state variables is called *dynamic-state*, and collection of static state variables is called *static-state*. 
+
+To get you familiar with state variables, here are some typical state variables
+1. **robot pose**: comprises of robot's location and orientation relative to global coordinate frame. Rigid mobile robots in 3D have 6 such variables - x,y,z,pitch,yaw,roll. Rigid mobile robots in 2D have only 3 such variables - x,y,yaw
+2. **kinematic state**: these variables capture the configuration variables determining robot's actutators. Actuators are build from rigid parts connected by different types of joints such as revolute, prismatic etc. So joint angles, displacement etc constitute the state variables
+3. **robot velocities**: these include the robot's velocity and velocity of its joints. A rigid body moving through 3D space is characterized by 6 velocities one for each pose variable. 
+4. **location and features of surrounding objects**: An object may be a tree, chair, painting, toy. Features of such object can be their color, texture, shape etc. Depending on the state granularity environment state variables may go from a dozen to a billion state variables. 
+5. **location and velocities of moving objects**: Other moving entities in the enviornment such as a car, person also have their own kinematic and dynamic state
+6. **Miscellaneous**: these include failure state of the robot's sensors and actuators, battery charge and so on
+
+
+**Complete State**</br>
+A state x<sub>t</sub> is said to be complete it is the best predictor of future. Our definition of completeness does not require future to be deterministic, but only that no variables prior to x<sub>t</sub> may influence the future states unless this dependence is mediated through x<sub>t</sub>. 
+
+Complete states exist only in theory, in reality one must select a subset of potential variables as state variables because of possibly unfathomably large variable set. Such a set is called the **incomplete state**. 
+
+
+**State spaces** that contain both continuous and discrete state variables are called hybrid state spaces. 
+
+#### Environmental Interaction
+There are two fundamental types of interactions that robot has with its environment. These two fundamental types are actuation and sensing. 
+
+**Data**: record of all measurements and control actions made by the robot since the beginning. In practice, all of it may not be stored. There are two type of data corresponding to the two types of interactions - actuation and sensing
+
+**Environmental Measurement Data**: provides information about the momentary state of the environment. We assume that a particular measurement happended at a particular instant. This is strictly true for camera images but not for laser scanner which perform sequential measurements. We denote measurement data by *z* and at time t as *z<sub>t</sub>*. The notation 
+
+
+z<sub>t<sub>1</sub>:t<sub>2</sub></sub> = z<sub>t<sub>1</sub>+1</sub>, z<sub>t<sub>1</sub>+2</sub>,...z<sub>t<sub>2</sub></sub>
+
+denotes measurement taken from [t<sub>1</sub>, t<sub>2</sub>\]
+
+
+**Control Data**: provide information about the change of state in the environment. In mobile robotics, this would mean velocity of the robot. Alternate source of control data are odometers. They measure revolution of robot's wheels. Even though odometers are control data, they measure the effect of a control action. 
+
+Control data are denoted by variable *u*, and u<sub>t</sub> denotes the change of state in the time interval (t-1,t]. 
+
+Control data is generated even when robot does not perform any action. Thus "doing nothing" constitutes a legal action. 
+
+#### Probabilisitic Generative Laws
+The evolution of state and measurements is governed by probabilistic laws. The state x<sub>t</sub> is generated stochastically from state x<sub>t-1</sub>. 
+
+If state *x* is **complete**, then it along with current actions and measurements is sufficient to predict future states. This is succintly stated as
+
+
+$$p(x_{t}|x_{0:t-1}, z_{1:t-1}, u_{1:t}) = p(x_{t}|x_{t-1},u_{t})$$
+
+Conditional independence is the reason many of the algorithms used in robotics are computationally tractable
+
+The probability, $p(x_{t}|x_{t-1}, u_{t})$ is known as **state transition probability**. It specifies how environmental state evolves over time as a function of robot controls, $u_{t}$. The probability
+$p(z_{t}|x_{t})$ is called the **measurement probability**. The state transition probability and the measurement probability define the dynamical stochastic system of the robot and its environment. 
+This system can be depicted pictorially using what is called a **hidden markov model (HMM)** or **dynamic Bayes network (DBN)**. 
+
+![HMM](images/hmm.png)
+
+
+
+#### Belief Distributions
+A belief reflect robots internal knowledge about the state of the environment. We distinguish true state from its internal belief about the state. True state cannot be know by the robot. For example a robot cannot know its pose exactlly in the world frame, it infers it from data. 
+
+In probability, we represent beliefs through conditional distributions. A belief distribution assigns a probability to each possible hypothesis with regards to the true state. They are posterior probabilities over state variables conditioned on available data. 
+
+We denote belief over state variable *x<sub>t</sub>*, by *bel(x<sub>t</sub>)*. 
+
+$$bel(x_{t}) = p(x_{t}|z_{1:t}, u_{1:t})$$
+
+We silently assume that belief is taken after the measurement *z<sub>t</sub>*, but it is not necessary, it may be taken before making the measurement or action at time t. 
+
+$$\overline{bel(x_{t})} = p(x_{t}|z_{1:t-1}, u_{1:t-1})$$
+
+In this case belief is known as **prediction**. Calculating *bel(x<sub>t</sub>)* from prediction, is called **correction** or **measurement update**
+
+### Bayes Filters
 
 
 
@@ -71,7 +148,8 @@ Used in Google's self driving car. Takes images of the road surface, and then us
 ### Intuition About Localization Math
 We model a robot's estimation of its position in space with a probability distribution function (pdf). Initially, the robot has no clue of where it is, so it could be anywhere. This is modeled as uniformly distributed. 
 
-To localize, the world has to have some distinctive features or landmarks. When the robot's sensors detect landmarks, the robot can modify its belief (encoded in the localization pdf). For example, in the image below, landmarks are 3 identical doors, when robot detects a door, belieft is modified, and it now assigns equal porbability of being at one of three doors, and very low probability of being at other locations. 
+To localize, the world has to have some distinctive features or landmarks. When the robot's sensors detect landmarks, the robot can modify its belief (encoded in the localization pdf). For example, in the image below, landmarks are 3 identical doors, when robot detects a door, belieft is modified, and it now assigns equal porbability of being at one of three doors, and very low probability of being at other locations.
+
 ![localization_doors](images/localization_doors.png)
 
 The new belief is referred to as the posterior belief because it is after the measurement. Now sa the robot moves, the belief moves with it. Let's understand this part... The belief is a representation of robot's position in space, if the robot were to move to right by 10m, it would now say that it is is one of the three positions 10m to the right of positions identified previously. This is depicted in the modified belief. 
