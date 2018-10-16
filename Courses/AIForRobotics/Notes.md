@@ -48,7 +48,14 @@ Briefly, we learn probabilistic concepts employed in state estimation, then we c
 ### Basics Concepts of Probability
 In probabilisitc robotics, location of robot, sensor measurements, controls are treated as *random variables*. Probabilistic inference is the process of calculating the distributions that govern the random variables that are themselves derived from other random variables and observed data.
 
-We will use *p(x)* to denote *p(X=x)*. 
+//TODO add equations, reference books, material
+
+
+### Robot Environment Interaction
+Now we will understand the modeling of robot's interaction with its environment. The image below summarizes the interaction through an information flow diagram. 
+![robot env interaction](images/robot_env_interaction.png)
+Since the robot's sensors are not perfect, it can rely on them to sense where it is at the current moment. It needs to maintain a belief distribution map of the environment internally. It then performs some actions which may/may not affect the environment itself. It also senses the actions it has performed as well as the environment state through sensors, this information is fed back to update the belief distribution map.
+
 
 
 
