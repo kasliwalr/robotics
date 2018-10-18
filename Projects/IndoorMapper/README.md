@@ -30,7 +30,7 @@ This project details the design of an indoor mapper project. This is an ongoing 
 |[RPLIDAR-A1](https://www.seeedstudio.com/RPLiDAR-A1M8-360-Degree-Laser-Scanner-Kit-12M-Range-p-3072.html)|1|99.00|99.00|
 |LiPo|1|50.00|50.00|
 |Caster|1|5.00|1|
-
+|PlateSupport M3x35mm|4|
 
 
 
