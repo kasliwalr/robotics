@@ -32,8 +32,11 @@ This project details the design of an indoor mapper project. This is an ongoing 
 |Caster|1|5.00|1|
 
 
+
+
 ## Notes
 - are vision+encoder based sensing sufficient for localization in indoor environments
+- [ROS-Serial](http://wiki.ros.org/rosserial) communicating to embedded hardware (TIVA/Arduino) from ROS using serial communication
 
 ## References
 - [Sensors for Mobile Robot-1](https://www.sensorsmag.com/components/choosing-best-sensors-for-a-mobile-robot-part-one)
