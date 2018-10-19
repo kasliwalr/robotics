@@ -38,7 +38,7 @@ This project details the design of an indoor mapper project. This is an ongoing 
 
 ## Power Budget
 
-|Component|Qty|Avg Idle I (mA)|Avg Performance I (mA)|Peak I (mA)|Voltage (V)|V<sub>ripple</sub>(V/ %)|
+|Component|Qty|Avg Idle I (mA)|Avg Max I (mA)|Peak I (mA)|Voltage (V)|V<sub>ripple</sub>(V/ %)|
 |---------|---|---------------|----------------------|-----------|-----------|------------------------|
 |R-Pi3    |1  |               |                      |           |           |                        |
 |R-Pi3 + CAM|1|               |                      |           |           |                        |
