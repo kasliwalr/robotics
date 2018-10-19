@@ -41,7 +41,7 @@ This project details the design of an indoor mapper project. This is an ongoing 
 |Component|Qty|Avg Idle I (mA)|Avg Max I (mA)|Peak I (mA)|Voltage (V)|V<sub>ripple</sub>(V/ %)|Total Avg Max I (mA)|
 |---------|---|---------------|----------------------|-----------|-----------|------------------------|------------|
 |[R-Pi3](https://www.pidramble.com/wiki/benchmarks/power-consumption)|1  |260            |730                   |?          | 5.1       |+/- 0.3V                     | 730|
-|[R-Pi3 + CAM|1](https://raspi.tv/2016/how-much-power-does-raspberry-pi3b-use-how-fast-is-it-compared-to-pi2b)|260            |850                   |?          |5.1          |+/-0.3V                      |850|
+|[R-Pi3 + CAM](https://raspi.tv/2016/how-much-power-does-raspberry-pi3b-use-how-fast-is-it-compared-to-pi2b)|1|260            |850                   |?          |5.1          |+/-0.3V                      |850|
 |TIVA Launchpad|1|NA          |45<sup>a</sup>        |           |5V         |+/0.25V                 |45|
 |[Dynamixel XL430-W250-T](http://support.robotis.com/en/)|2     |52                    |?          |11.1       |?                       |>100 ?|
 |[LiDAR](http://bucket.download.slamtec.com/8e7a1f4490a235717b43fccaf7dcae325dda7dc8/LD108_SLAMTEC_rplidar_datasheet_A1M8_v2.1_en.pdf)    |1   |250           |500                   |700        |5          |0.02                    |500|
