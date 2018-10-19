@@ -36,6 +36,20 @@ This project details the design of an indoor mapper project. This is an ongoing 
 |Sprocket|2||
 
 
+## Power Budget
+
+|Component|Qty|Avg Idle I (mA)|Avg Performance I (mA)|Peak I (mA)|Voltage (V)|V<sub>ripple</sub>(V/ %)|
+|---------|---|---------------|----------------------|-----------|-----------|------------------------|
+|R-Pi3    |1  |               |                      |           |           |                        |
+|R-Pi3 + CAM|1|               |                      |           |           |                        |
+|TIVA Launchpad|1|            |                      |           |           |                        |
+|Dynamixel XL430-W250-T|2     |                      |           |           |                        |
+|LiDAR    |1   |              |                      |           |           |                        |
+|IR Sensor|5   |              |                      |           |           |                        |
+|Nvidia TX1|1  |              |                      |           |           |                        | 
+
+
+
 
 
 
