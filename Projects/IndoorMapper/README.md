@@ -32,6 +32,8 @@ This project details the design of an indoor mapper project. This is an ongoing 
 |Caster|1|5.00|1|
 |PlateSupport M3x35mm|4|||
 |PlateSupport M3x45mm|4|||
+|Tyre|2|||
+|Sprocket|2||
 
 
 
