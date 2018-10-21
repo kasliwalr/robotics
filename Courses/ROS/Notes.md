@@ -145,6 +145,96 @@ ROS client library is a collect of code, that maps the ROS concepts to C++ based
 |ros::names|Contains functions for manipulating ROS graph resource names|
 
 
+## ROS Tools
+Now, we'll give an overview of some ROS specific developer tools
+
+### rocore
+roscore is the first step in bringing up the ROS system. It starts three different objects namely ros name server `master`, ros `parameter server` and ros node `rosout`. 
+1. ros `master`: it is the name server
+2. ros `parameter server`: holds key/value parameter data
+3. `rosout` node: aggregates debug messages from all other nodes
+
+When a node is started, it first registers itself with the master. The master maintains a lookup table, where each node name maps to its network address. So after registration, the lookup table is updated with an entry containing the node's name and corresponding network address. 
+
+Node also registers in topic subscriptions, topic advertisements and services. It also obtains the network address for all publishers to a topic that it subsrcibes to. It will then contact each publishing node to negotiate a connection to receive messages on that topic. 
+
+If a master is killed, the system state cannot be changed. This means new nodes cannot be added, and new connections can't be made. 
+
+
+### Parameter Server
+The job of parameter server is to store configuration data in a network accessible database. It maintains a dictionary of key/value pairs, where key is a string, and values can be of any type. Any node can read and write to parameter server. 
+
+The `rosparam` tools allows operating on the parameter server from the command line. It allows listing all parameters, and deleting, setting and getting individual parameter values. It also allows dumping and loading data dictionary to and from yaml file
+
+### roscd: Navigating ROS Filesystem
+
+`roscd` allows switching to package directory by only using the package name
+```
+> roscd package_name
+```
+`roscd` is one of the commands in the rosbash suite package. roscd is implemented as a shell bash shell function rather than an executable program. 
+
+### rosed: Editing files
+`rosed` allows editing a file in a certain ros package, like so
+```
+> rosed package_name file.cpp
+```
+The file will be opened in the editor specified by value of environment variable EDITOR
+
+### rosrun: Starting a node
+ROS node executables are typically not in the OS's search path for executables (i.e. the environment variable PATH). You could use rosrun to provide the package name and the node name like so
+```
+> rosrun package_name node_name
+```
+rosrun does not return until the node exits. So you can kill it by simply Ctrl-C. 
+
+### roslaunch
+`roslaunch` is a tool that reads XML description of a set of nodes, then launches and monitors those nodes. By	convention,	 roslaunch 	XML	files have	the	extension .launch and are called “launch files.”
+    
+### rostest: Testing a Multi-Node System
+The rostest tool is just an extension to roslaunch, adding the <test> tag to allow specification of a test program to run alongside other nodes. After launching, the rest of the nodes, `rostest` will launch the test-node, this node is expected to use one of the standard testing frameworks to verify that the rest of the nodes are working properly and to report its finding in an xUnit-format output file
+
+### rosnode, rostopic, rosmsg, rosservice and rossrv
+These are bunch of command line tools to directly interrogate a master or a node about their state. 
+
+### Debugging: /rosout and rqt_console
+These tools allow us to check for error messages. The basic premise here is that you may not have access to a console that spawned a particular process. Like, in linux, there is log file somewhere where error messages are logged, however, ROS is a distributed framework, so processes may be logging their error information on log files on separate machines.
+
+
+In ROS, a topic by the name /rosout is available, this topic carries messages of type Log. Any node can publish its error Logs on this topic, while any other node can subscribe to it. There is also a logging API in ros client library that makes it easy for nodes to publish the error Logs onto /rosout
+
+
+**Reading the Log messages**</br>
+To read error log messages, one can write a node which subscribes to /rosout. ROS however provides a GUI tool rqt_console, this is a much more convenient way of keeping track of error messages. 
+
+`rqt_console` actually subscribes to `/rosout_agg`, here is the reason: A large ROS system has 100's of node running on multiple machines. To receieve those messages, rqt_console will need to establish a connect to each of those nodes, the total time may run into 10's of seconds which is unacceptable. The solution is to spawn a node (called `rosout`) when roscore is invoked, this node subscribes to /rosout, and republishes messages on an aggregated topic called /rosout_agg. rosout keep establishing connections with nodes as they are spawned by the system. Later when rqt_console starts, it need only make a single connection to rosout node over the /rosout_agg topic. 
+
+### Debugging: rosnode and rqt_graph
+These tools address problems relating to a missing connection or incorrect connections. The first step in debugging connections is to run `rqt_graph`. `rqt_graph` is a GUI that queries and visualizes nodes and topics. 
+
+
+### Sensor Fusion: rviz
+What if all the nodes are connected properly anf they are not raising any errors, but the robot is not behaving properly. It is a tool to visualize relevant sensor data from the robot. The details of what to visualize will depend on your application. 
+
+### Plotting: rqt_plot
+If you want to visualize individual values from a sensor, use `rqt_plot`. This tools supports 1D and 2D plotting of any numeric data that is published on ROS system. 
+```
+> rqt_plot /sin/data
+```
+The above example opens rqt_plot and plots the data published on the topic, /sin 's data field. 
+
+### Data Logging and Analysis: rqt_bag and rosbag
+It is common in ROS system to log data to file for later analysis. It basically works by subscribing a topic you want to log, and then writing it to disk. ROS provides a logging tools called `rosbag`. By convention, the resulting log files have extension `.bag`. These files are referred to as *ROS bags* or *bags*. 
+```
+> rosbag record -O log_file.bag /topic_name     # file name is optional, rosbag will generate a filename based on the timestamp
+> rostopic echo /topic_name
+> rosbag play log_file.bag
+```
+rosbag can also read the .bag file and play it back as shown above. 
+
+
+rqt_bag is a convenient graphical tools for introspecting a bag file. Using	 rqt_bag ,you can see how many topics were recorded, how frequently messages on each topic were received, introspect contents of the messages, play back and loop over the entire bag or a section of it. 
+
 
 
 
