@@ -236,6 +236,9 @@ rosbag can also read the .bag file and play it back as shown above.
 rqt_bag is a convenient graphical tools for introspecting a bag file. Using	 rqt_bag ,you can see how many topics were recorded, how frequently messages on each topic were received, introspect contents of the messages, play back and loop over the entire bag or a section of it. 
 
 
+## ROS Patterns
+
+A collections of best practices for ROS development [here](http://wiki.ros.org/ROS/Patterns)
 
 
 # ROS Course
