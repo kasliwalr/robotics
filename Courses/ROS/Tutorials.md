@@ -117,9 +117,9 @@ To make sure your workspace is properly overlayed by the setup script, make sure
 > echo $ROS_PACKAGE_PATH
 /home/rk/repos/Robotics/scratch/catkin_ws/src:/opt/ros/kinetic/share
 ```
-### Navigating the ROS Filesystem
+## Navigating the ROS Filesystem
 
-#### Finding package location
+### Finding package location
 In ROS, code is spread over many packages. We'll cover a few role command-line tools used to navigate the ROS filesystem. To do these exercise, we'll first install a tutorial package from the online ROS debian package repository using apt-get.
 ```
 > sudo apt-get install ros-kinetic-ros-tutorials
@@ -131,7 +131,7 @@ We'll use command-line tools `rospack` to find packages.
 ```
 The above show the location where roscpp_tutorials are installed by apt-get. 
 
-#### Navigating to package location
+### Navigating to package location
 We use roscd for it. We only need to provide the package name to the command
 ```
 > pwd
@@ -148,13 +148,14 @@ roscd can also move to a subdirectory of a package like so
 ```
 `roscd log` will take you to the directory where ROS log files are stored. 
 
-#### Listing directory contents
+### Listing directory contents
 `rosls` allows you to `ls` directory contents simply by refereing to the package name. Here is an example
 ```
 > rosls roscpp_tutorials
 cmake  launch  package.xml  srv
 ```
 
+## Creating a ROS package
 ### Creating a package using catkin
 Since we will use the catkin build system to manage this package, its of type *catking package*. By creating, we mean we'll add some content to it. There is some boilerplate stuff that needs to be in the package folder, for it to be called a package. 
 1. The package must contain a catkin compliant **package.xml**
@@ -216,8 +217,15 @@ To list all dependencies for a package (direct and indirect) recursively, do lik
 ### Customizing the package
 For this we'll need to delve deeper into the structure of a package and even the files therein. 
 
-#### File Package.xml
+### File Package.xml
 There is one such file per package, it should be located in `src/package_name` directory correponding to the package *package_name*. 
+[see detailed description](#package-xml-structure)
+
+
+## Building a ROS package
+If all system dependencies are installed, a package is ready to be built
+[TODO: continue here](http://wiki.ros.org/ROS/Tutorials/BuildingPackages)
+
 
 
 
@@ -294,5 +302,21 @@ Here is an example for `beginner_tutorials/package.xml`
 |**build tool**|build system tools needed by the package to build itself. In cross-compilation scenarion, build tool dependencies are for the architecture on which the compilation is performed.|<buildtool_depend>|
 |**documentation tool**|documentation tools which package needs to generate documentation|<doc_depend>|
 
-test
 <depend> specifies that a dependency is a build, export, and execution dependency. This is the most commonly used dependency tag.
+
+
+4. Metapackages: It is convenient to group multiple packages as a single logical package. This can be accomplished through **metapackages**. metapackages have an additional tag, <export> 
+```
+<export>
+ <metapackage />
+</export>
+```
+Other than the build tool dependency on catkin, metapackages can only have execution dependenices on packages which they group. Additionally, metapackage has a required boiler-plate CMakeLists.txt  file
+```
+cmake_minimum_required(VERSION 2.8.3)
+project(<PACKAGE_NAME>)
+find_package(catkin REQUIRED)
+catkin_metapackage()
+```
+5. Additional tags: Additional tags inlcude the <url> and <author> tags. These are self-explanatory. 
+
