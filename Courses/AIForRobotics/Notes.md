@@ -211,6 +211,81 @@ def sense(p, Z):
     return q
 ```
 
+### Belief Distribution under precise motion
+If we know the belief distribution over a linear grid, we can easily predict the belief distribution under precise motion (i.e. the robot know exactl how much it moved). A simplifying assumption here is cyclic world. 
+
+So, how do we write code for handling perfect movement. 
+```
+def move(p, U):
+    #
+    # create a separate list q, of length p
+    q = [x for x in p]
+
+    shift = U%len(p)               # calculate shift based on cyclic grid
+    for i in range(len(p)):
+        q[(i+shift)%len(p)] = p[i] # assign p[i] to its shifted position in q
+    return q
+```
+We define a function move, that takes in a belief distribution, *p* and 
+
+### Belief Distribution under inaccurate motion
+We begin with a simple case, our prior localizes our robot precisely in a single grid. Our motion however is not extact, although the intent is to move 2 grid cells to the right, actuator noise prevents this. What we have is 80% probably of moving 2 grid cells, 10% 1 grid cell and 10% 3 grid cells. This is depicted in the figure below
+![inexact motion](images/inexact_motion1.png)
+
+The above case is simplistic, but if the prior is a distribution, then how do we combine the contributions of probabilitiy of arriving in a grid cell from potentially different locations? TODO//cover this 
+Now let's write a function to accomodate move probability distribution to output the posterior belief
+```
+def move(p, U):
+    q = []
+    for i in range(len(p)):
+        s = 0
+        s += p[(i-U)%len(p)]*pExact
+        s += p[(i-U-1)%len(p)]*pOvershoot
+        s += p[(i-U+1)%len(p)]*pUndershoot
+        q.append(s)     # for each location is posterior belief, sum contributions from all locations in prior belief,
+    return q
+```
+In the limiting case of inifinite number of movements, the final belief distribution approximates the uniform distribution closely. The mathematical derivation of it is based on [balance equation](https://en.wikipedia.org/wiki/Balance_equation). Intuitively, each motion leads to loss of information, the information keeps decreasing until its reaches the least informative distribution - uniform distribution. 
+
+
+### Sensing and Moving
+This is an important point. These two words - sensing and moving lie are fundamental to localization. We start with an initial belief and then localization iterates through moving and sensing indefinitely. Moving causes loss of information, and sensing leads to gain of information. 
+
+![sense and move](images/sense_move.png)
+
+There is a measure of information called entropy, described mathematically as 
+$$- \sum p(X_{i}).log(p(X_{i}))$$
+
+### Summary of Localization
+
+Succintly put, localization consists of 3 things
+1. Belief: A distribution indicating where the robot is 
+2. Sense: Product of Belief and Measurements, followed by normalization 
+3. Move: Convolve (Read contributions and add them)
+
+
+### Bayes Rule
+In our context, it mathematically depicts the process of measurement. Bayes rule is stated as
+$$p(X_{i}|Z) = \frac{p(Z|X_{i}).p(X_{i})}{p(Z)}$$
+
+Here, p(X<sub>i</sub>) is the **prior**, p(Z|X<sub>i</sub>) is the **measurement** and p(X<sub>i</sub>|Z) is the **posterior**
+
+
+
+### Theoram of Total Probability
+In our context, motion calculation are mathematically described using the [total probability theoram](https://en.wikipedia.org/wiki/Law_of_total_probability)
+
+$$p(X^{t}_{i}) = \sum p(X^{t-1}_{j}).p(X_{i}|X_{j})$$
+
+
+p(X<sup>t-1</sup><sub>j</sub>): all the different j's we could have come from to i, all the prior probabilities
+p(X<sub>i</sub>|X<sub>j</sub>): transition probabilities that I go from j to i given the motion command
+
+Operation of weighted sum over prior probabilities is often called **convolution**
+
+
+
+
 
 ## Kalman Filters
 
