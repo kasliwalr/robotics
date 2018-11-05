@@ -189,6 +189,12 @@ To add workspace to ROS environment, it needs to be sourced
 ```
 > source devel/setup.sh
 ```
+After you complete this, you will be able to use the ROS navigation commands with the package_name. For example to navigate to package from anywhere in the filesystem, simply type
+```
+> roscd beginner_tutorials
+> pwd
+/home/rk/repos/Robotics/scratch/catkin_ws/src/beginner_tutorials
+```
 
 ### Dependency Management
 rospack can be used to inspect the first order dependencies of a package like so
@@ -226,12 +232,525 @@ There is one such file per package, it should be located in `src/package_name` d
 If all system dependencies are installed, a package is ready to be built
 [TODO: continue here](http://wiki.ros.org/ROS/Tutorials/BuildingPackages)
 
+### Using catkin_make
+We have already seen how to build packages using catkin_make. It is a command line which combines calls to cmake and make in the standard cmake workflow. Below is the example usage
+```
+> catkin_make [make_targets] [-DCMAKE_VARIABLES=...]
+```
+Just so that we are on the same page, below is a cmake workflow
+```
+# In a CMake project
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ make install  # (optionally)
+```
+The above process is run for each cmake project. In contrast more than one catkin project can be built together in workspaces. Building zero or more catkin packages in a workspace follows this workflow
+```
+# In a catkin workspace
+$ catkin_make
+$ catkin_make install  # (optionally)
+```
+The above will build all projects in the src folder inside a catkin workspace. If you src folder is located in a different location, then the following workflow applies
+```
+# In a catkin workspace
+$ catkin_make --source my_src
+$ catkin_make install --source my_src  # (optionally)
+```
+
+### Building the Package
+You should already have a catkin workspace and a new catkin package called beginner_tutorials in the src folder. Let's verify that
+```
+> cd catkin_ws
+> pwd
+/home/rk/repos/Robotics/scratch/catkin_ws                  # in the catkin workspace
+> ls src
+beginner_tutorials  CMakeLists.txt                         # beginner_tutorials is present
+```
+While in the top level folder, catkin_ws, invoke catkin_make
+```
+> catkin_make
+```
+This typically generates a lot of output from cmake and make. On my Ubuntu 16.04LTS, this was the output
+```
+Base path: /home/rk/repos/Robotics/scratch/catkin_ws
+Source space: /home/rk/repos/Robotics/scratch/catkin_ws/src
+Build space: /home/rk/repos/Robotics/scratch/catkin_ws/build
+Devel space: /home/rk/repos/Robotics/scratch/catkin_ws/devel
+Install space: /home/rk/repos/Robotics/scratch/catkin_ws/install
+####
+#### Running command: "cmake /home/rk/repos/Robotics/scratch/catkin_ws/src -DCATKIN_DEVEL_PREFIX=/home/rk/repos/Robotics/scratch/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/rk/repos/Robotics/scratch/catkin_ws/install -G Unix Makefiles" in "/home/rk/repos/Robotics/scratch/catkin_ws/build"
+####
+-- Using CATKIN_DEVEL_PREFIX: /home/rk/repos/Robotics/scratch/catkin_ws/devel
+-- Using CMAKE_PREFIX_PATH: /opt/ros/kinetic
+-- This workspace overlays: /opt/ros/kinetic
+-- Using PYTHON_EXECUTABLE: /usr/bin/python
+-- Using Debian Python package layout
+-- Using empy: /usr/bin/empy
+-- Using CATKIN_ENABLE_TESTING: ON
+-- Call enable_testing()
+-- Using CATKIN_TEST_RESULTS_DIR: /home/rk/Documents/Repos/Robotics/scratch/catkin_ws/build/test_results
+-- Found gmock sources under '/usr/src/gmock': gmock will be built
+-- Found gtest sources under '/usr/src/gmock': gtests will be built
+-- Using Python nosetests: /usr/bin/nosetests-2.7
+-- catkin 0.7.14
+-- BUILD_SHARED_LIBS is on
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~  traversing 1 packages in topological order:
+-- ~~  - beginner_tutorials
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- +++ processing catkin package: 'beginner_tutorials'
+-- ==> add_subdirectory(beginner_tutorials)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/rk/Documents/Repos/Robotics/scratch/catkin_ws/build
+```
+Note that at the top, is a list of paths that catkin is using which indicates where it will look for packages, where it will store builds and where it will store installations. As a results several folder are created in the catkin workspace. 
+```
+> pwd
+/home/rk/repos/Robotics/scratch/catkin_ws                  # in the catkin workspace
+> ls
+build  devel  src                                          # folder created in addition to src
+```
+
+## Understanding Nodes
+From this point on, we cover ROS graph concepts and use of roscore, rosnode and rosrun
+
+We will be using a tutorials package from ROS, lets install it using apt-get
+```
+> sudo apt-get install ros-kinetic-ros-tutorials            # replaced distro with kinetic in ros-<distro>-ros-tutorials
+```
+
+### What is a node?
+Node is simply a an executable file within a ROS package. ROS are written in C++/Python and use the ROS client API to communicate with other nodes. This API allows nodes to publish/subscribe to a topic or use/provide a service. For C++, ROS provide the roscpp client library. 
+
+### Before running a node
+The first thing that should be run, is roscore. In the terminal, write
+```
+> roscore
+... logging to /home/rk/.ros/log/230b56ee-e11b-11e8-a00e-60d819ce9d18/roslaunch-ThinkPad-X220-5390.log
+Checking log directory for disk usage. This may take awhile.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+
+started roslaunch server http://ThinkPad-X220:35015/
+ros_comm version 1.12.14
 
 
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: kinetic
+ * /rosversion: 1.12.14
+
+NODES
+
+auto-starting new master
+process[master]: started with pid [5401]
+ROS_MASTER_URI=http://ThinkPad-X220:11311/
+
+setting /run_id to 230b56ee-e11b-11e8-a00e-60d819ce9d18
+process[rosout-1]: started with pid [5414]
+started core service [/rosout]
+```
+As you can see it generates copious output. Important, it has started roslaunch server at `http://ThinkPad-X220:35015/`. It alsoo summarizes the nodes created - master, rosout-1. It also mentions that it has started new services available at /rosout
+
+We will now query the nodes using `rosnode`. In a new terminal
+```
+> rosnode list
+/rosout
+```
+The `rosnode info` command returns information about a specific node such as subscription/publications on topics and provision of services
+```
+> rosnode info /rosout
+--------------------------------------------------------------------------------
+Node [/rosout]
+Publications: 
+ * /rosout_agg [rosgraph_msgs/Log]
+
+Subscriptions: 
+ * /rosout [unknown type]
+
+Services: 
+ * /rosout/get_loggers
+ * /rosout/set_logger_level
 
 
+contacting node http://ThinkPad-X220:41411/ ...
+Pid: 5414
+```
+
+### How to run a node?
+We'll use rosrun to invoke a node. `rosrun` allows you to use the package name to directly run a node within a package (without having to know its path)
+```
+> rosrun [package_name] [node_name]
+```
+We will run the turtlesim node in turtlesim package. lets open another terminal 
+```
+> rosnode turtlesim turtlesim_node
+```
+This will pop up a window showing a turtle. One can also now verify that additional node is running by listing them.
+```
+> rosnode list
+/rosout
+/turtlesim
+```
+So, in addition to /rosout, we have a /turtlesim node running. If you want a better name for your running executable, you can do name remapping at the time of invocation. 
+```
+> rosrun turtlesim turtlesim_node __name:=my_turtle
+> rosnode list
+/my_turtle
+/rosout
+```
+As you can see, we have a new name for turtlesim_node. To test that this node is running, we ping it
+```
+> rosnode ping /my_turtle
+rosnode: node is [/my_turtle]
+pinging /my_turtle with a timeout of 3.0s
+xmlrpc reply from http://ThinkPad-X220:41099/	time=0.579119ms
+xmlrpc reply from http://ThinkPad-X220:41099/	time=1.505136ms
+```
+
+## Understanding ROS Topics
+We'll cover `rostopics` and `rqt_plot`. We invoke another node `turtle_teleop_key` to record key presses
+```
+> rosrun turtlesim turtle_teleop_key
+```
+Now we can make the turtle move using the arrow keys. The turtlesim_node and the turtle_teleop_key node are communicating with each other over a ROS Topic. turtle_teleop_key is **publishing** the capturing key strokes and publishing them on a topic, which turtlesim subscribes to. It then processes these messages to move the turtle on the screen. 
+
+### Visualizing the ROS graph
+If you have already installed `rqt_graph`, simply do the following
+```
+> rosrun rqt_graph rqt_graph
+```
+It will generate an image like below, depicting the graph
+![ros graph](images/ros_graph.png)
+
+It shows that turtle_teleop_key is publishing over the topic /turtle1/cmd_vel. /turtlesim is subscribing to this topic. 
+
+### Rostopic
+This command line tools provides information about ROS topics. 
 
 
+#### Printing Topic data to terminal
+The `echo` sub-command prints the data streaming over the topic to screen
+```
+>rostopic echo /turtle1/cmd_vel                     # rostopic echo [topic_name]
+```
+What is happening behind the scenes is that another node has been spawned, it subscribes to the topic, when it receives the topic messages, it prints them onto the screen. 
+
+![rostopic node](images/rostopic_node.png)
+
+
+#### Listing all topics
+To view list of all topics currently subscribed or published
+```
+> rostopic list
+/rosout
+/rosout_agg
+/turtle1/cmd_vel
+/turtle1/color_sensor
+/turtle1/pose
+```
+
+### ROS Messages
+Communication on topics happens by sending ROS messages between nodes. The type of the message sent over a topic can be determined by `rostopic type [topic]` command. 
+```
+> rostopic type /turtle1/cmd_vel
+geometry_msgs/Twist
+```
+To get more detail on the message we use the `rosmsg` command line utility
+```
+> rosmsg show geometry_msgs/Twist
+geometry_msgs/Vector3 linear
+  float64 x
+  float64 y
+  float64 z
+geometry_msgs/Vector3 angular
+  float64 x
+  float64 y
+  float64 z
+```
+
+### Publishing Data
+We can use command line tools to publish data messages on an existing topic. To do this, we use the `pub` subcommand of rostopic. 
+```
+> rostopic pub -1 /turtle1/cmd_vel  geometry_msgs/Twist -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, 1.8]' # rostopic pub [topic] [msg_type] [args]
+```
+The command will send a message to turtlesim_node, telling it to move with a linear velocity of 2.0 and angular velocity of 1.8. This will move the turtle. 
+
+The `-1` option causes rostopic to only publish one message and then exit. The `--` option tell the option parser that non of following arguments is an option. The arguments are provided in the [YAML syntax](http://wiki.ros.org/ROS/YAMLCommandLine)
+
+One can also provide a steady stream of messages using `-r [pub_freq_in_HZ]` option like so
+```
+$ rostopic pub /turtle1/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'
+```
+### Viewing publish rate
+We can view the rate at which data is being published using the `hz` sub-command
+```
+> rostopic hz /turtle1/pose   #  rostopic hz [topic]
+```
+
+### Combining rostopic type and rosmsg show
+We can feed output of one command into input of second command using linux pipe (`|`) facility. This should generate the expected output detail msg structure
+```
+> rostopic type /turtle1/cmd_vel | rosmsg show
+geometry_msgs/Vector3 linear
+  float64 x
+  float64 y
+  float64 z
+geometry_msgs/Vector3 angular
+  float64 x
+  float64 y
+  float64 z
+```
+
+### Using rqt_plot
+rqt_plot displays a time plot of data published on topics (like an oscilloscope). As an example, we'll use rqt_plot to view pose data being published by turtlesim_node. We invoke rqt_plot the usual way
+```
+> rosrun rqt_plot rqt_plot
+```
+The interface allow the user to add any topic they wish. 
+
+![rqt plot](images/rqt_plot.png)
+
+## Understanding ROS Services and Parameters
+We will cover `rosservice` and `rosparam` utilities
+
+### Rosservice
+To obtain information about services running in ROS we use `rosservice` command. To list all the running services, do the following
+```
+> rosservice list
+/clear
+/kill
+/reset
+/rosout/get_loggers                            # services offered by /rosout node
+/rosout/set_logger_level
+/spawn
+/teleop_turtle/get_loggers
+/teleop_turtle/set_logger_level
+/turtle1/set_pen
+/turtle1/teleport_absolute
+/turtle1/teleport_relative
+/turtlesim/get_loggers                         # services offered by /turtlesim node
+/turtlesim/set_logger_level
+```
+#### Service Type
+To determine the type of the service, we query the service for it, like so...
+```
+> rosservice type /clear rosservice type [service_name]
+std_srvs/Empty
+```
+The service is empty, this means when service call is made it takes no arguments (i.e. sends no data when making a request and receives no data when receiving a response)
+
+#### Calling a service using Commandline
+Now we will request service using the `call` sub-command of rosservice
+```
+> rosservice call /clear                # rosservice call [service] [args]
+```
+This is just like publishing data over a topic, where we published instead of call, and provided topic name with arguments. This has the effect of clearning the turtlesim window background. 
+
+
+Lets look at a case where we provide arguments in the service call
+```
+> rosservice type /spawn | rosservice info
+```
+We learn what the data strucuture for service request of type /spawn is
+```
+> rosservice type /
+float32 x
+float32 y
+float32 theta
+string name
+---
+string name
+```
+
+Now we call the service /spawn using appropriate arguments
+```
+> rosservice call /spawn 2 2 0.2 ""
+name: "turtle2"
+```
+The service call returns with the name of the newly created turtle
+
+### Using Rosparam
+`rosparam` allows you to store and manipulate data on the ROS **parameter server**. The Parameter server can store many data types such as integers, floatds, boolean, dictionaries and lists. `rosparam` uses the YAML markup language for syntax. Using rosparam sub-commands one can set/get parameters, load/dump from/to file, delete parameters and list them. 
+```
+> rosparam list
+/background_b
+/background_g
+/background_r
+/rosdistro
+/roslaunch/uris/host_thinkpad_x220__44437
+/rosversion
+/run_id
+```
+#### Setting and Getting Parameters
+This is how we set and get parameters
+```
+> rosparam set [param_name]
+> rosparam get [param_name]
+```
+
+One can also view the contents of the entire parameter server
+```
+> rosparam get /
+background_b: 255
+background_g: 86
+background_r: 69
+rosdistro: 'kinetic
+
+  '
+roslaunch:
+  uris: {host_thinkpad_x220__44437: 'http://ThinkPad-X220:44437/'}
+rosversion: '1.12.14
+
+  '
+run_id: bb790ae6-e122-11e8-a00e-60d819ce9d18
+```
+### Dumping and Loading parameters
+Dump the parameter/parameters as follows
+```
+> rosparam dump ~/tempfile /    #   usage: rosparam dump [file_name] [namespace]
+> rosparam load ~/params /    #   usage: rosparam load [file_name] [namespace]
+```
+The load command loads parameters from file into the namespace, the file needs to be specified in the YAML format
+
+
+## Using Rqt_console and roslaunch
+We'll cover `rqt_console`, `rqt_logger_level` for debugging and `roslaunch` utilities for launching many nodes at once. 
+
+
+### Using rqt_console and rqt_logger_level
+rqt_console is a node that attaches to ROS's logging framework to display output from nodes. rqt_logger_level allows us to change the verbosity of the error message. There are 4 levels - DEBUG, WARN, INFO and ERROR. 
+
+We use rqt_console to view turtlesim output. We will also switch the logger levels while viewing the outputs. 
+
+First we run both nodes corresponding to logger and console
+```
+> rosrun rqt_console rqt_console
+> rosrun rqt_logger_level rqt_logger_level
+```
+Then we can set the logging level from info to warn. Now if we run the turtle into the wall, we'll see warning messages being show in rqt_console. 
+
+### Logger Level
+There are 5 logger level with priority order as follows : Fatal > Error > Warn > Info > Debug
+
+### Using roslaunch
+We will now use roslaunch, to invoke multiple turtlesim nodes at once. The roslaunch takes as input a package name and launch file. It is good practice to store all launch files corresponding to a package in the package folder. 
+```
+> roscd begineer_tutorials
+> mkdir launch 
+> cd launch
+```
+
+### Creating a launch file
+Here is a launch file
+```
+   1 <launch>
+   2 
+   3   <group ns="turtlesim1">
+   4     <node pkg="turtlesim" name="sim" type="turtlesim_node"/>
+   5   </group>
+   6 
+   7   <group ns="turtlesim2">
+   8     <node pkg="turtlesim" name="sim" type="turtlesim_node"/>
+   9   </group>
+  10 
+  11   <node pkg="turtlesim" name="mimic" type="mimic">
+  12     <remap from="input" to="turtlesim1/turtle1"/>
+  13     <remap from="output" to="turtlesim2/turtle1"/>
+  14   </node>
+  15 
+  16 </launch>
+```
+It is specified in xml. We start eaech launch file with `<launch>` tag. We start two groups with namespace tag of "tutorialsim1" and "tutorialsim2". Inside these namespaces we create one turtlesim_node node each named "sim" from package "turtlesim". This allows us to start two nodes without name conflicts
+
+The thrid section starts a mimic node from package turtlesim in the global namespace. We also rename the topics input and output of which mimic acccess to turtlesim1's turtle1 and turtlesim2's turtle1 topics. Note that we were able to do this remapping in mimic, because it is located in the global namespace. This could not have been done from inside either of turtlesim1 and turtlesim2 nodes. 
+
+### Lets roslaunch
+```
+> roslaunch beginner_tutorials turtlemimic.launch
+```
+Now lets, publish to the topic to make the turtle go in circles
+
+
+## Rosed
+`rosed` utilility allows opening the ROS editor from command line. It defaults to some well used editor like `vim`, `nano` or `emacs`. This can be defined by setting the EDITOR environment variable. To do this automatically everytime we open the terminal, add the following line to `~/.bashrc` file
+```
+> export EDITOR='vim'
+```
+Open a new terminal and very that EDITOR variable is set
+```
+> echo $EDITOR
+```
+
+## Creating a ROS message and service
+We will learn how to create and build message (msg) and service (srv) files. We will also employ rosmsg, rossrv and roscp command line tools. 
+### Introduction to msg and srv
+Message files with **.msg** extension are simple text files that describe the fields of a ROS message. They are used to generate source code for messages in different languages (C++/Python). On the filesystem msg files are stored in the msg directory of a package
+
+Message file format. Each line consists of a field type and field name. The following types are acceptable - integers, float, string, time, duration, other message files, variable-length array and Header. Header is a special types in ROS, header contains a timestamp and coordinate frame transformation information that are commonly used in ROS. So a typical msg file looks like so
+```
+Header header
+string child_frame_id
+geometry_msgs/PoseWithCovariance pose
+geometry_msgs/TwistWithCovariance twist
+``` 
+
+Service files with **.srv** extension describe a service. It is composed of the service communication elements i.e. a request and a response. On the filesystem, srv files are stored in the srv directory of the package. In terms of their format, srv files are just like message files, except they contain two parts one for request and other for response. 
+```
+int64 A
+int64 B
+---
+int64 Sum
+```
+
+### Using msg
+We would like to create a custom message for our packages. We start by creating a msg director at the top level in package src code
+```
+> cd catkin_ws/src/beginner_tutorials
+> mkdir msg
+> cd msg
+> echo "int64 sum" > Num.msg               
+> cat Num.msg                              # verify
+int64 Num
+```
+We also need to make sure that message files are converted into soruce code for C++. So we add it to the dependencies in our package.xml files. Specifically, we'll add the following dependency
+```
+<build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+```
+Edit the CMakeLists.txt. Add message_generation dependency to the find_package call. 
+```
+find_package(catkin REQUIRED COMPONENTS
+   roscpp
+   rospy
+   std_msgs
+   message_generation
+)
+```
+Also export the message_runtime dependency. 
+TODO: // complicated step to understand. comback [later](http://wiki.ros.org/ROS/Tutorials/CreatingMsgAndSrv)
+
+### Using srv
+For srv files we create a srv directory inside begineer_tutorials package. We will copy an existing definition from another package this time
+```
+> mkdir srv
+> cd srv
+> roscp rospy_tutorials AddTwoInts.srv ./       # roscp [package_name] [file_to_copy_path] [copy_path]
+```
+TODO: again make changes to package.xml and CMakeList.txt. Come back to this later
+
+
+### Common Step for msg and srv
+Now that we have made some changes to the package, we need to rebuild the package. 
+```
+> cd ~/catkin_ws
+> catkin_make install
+```
 
 
 # Catkin
