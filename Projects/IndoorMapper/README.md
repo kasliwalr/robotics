@@ -52,6 +52,37 @@ This project details the design of an indoor mapper project. This is an ongoing 
 a: current consumption chart in [TM4C123GH6PM datasheet](http://www.ti.com/lit/ds/symlink/tm4c123gh6pm.pdf), @80MHZ, all peripherals enabled. Current consumption by specific attached peripherals, or in action is not included. 
 
 
+## Hardware Schematic
+
+#### Dynamixel -- RPi 
+Driving Dyanmixel using Raspberry Pi.
+
+Keywords: Dynamixel SDK C/C++ API, Dynamixel Protocol 2.0, USB2Dynamixel, U2D2, Protocol 2.0, Control Table, EEPROM Area, RAM Area
+On linux, Dynamixel SDK is available as shared library (.so) as well as source code. Examples are also available
+
+
+
+
+### Power Distribution 
+The goal of the power distribution system to to supply all components of the system power at specified voltages and current. I will provide a brief description of the power distribution in Turtlebot3 Burger modified version that I am making. Specifically, I will list the components and elaborate a bit on the reasons for choosing the components. 
+
+Component choice was mostly driven by budget, the original Robotis platform was > $500.00, this was unnecessarily expensive for me. I already had a few parts and found a few other unnecessary for my initial prototype. So here goes.
+
+1. Battery: Robotis offers a 11.1 V LiPo battery, 1800mAh, 5C with protection circuitry, price $50.00. On the market. It weight around 106 gms and is 88cm long. I could find similar battery with higher current rating of 2500mAh, 5C. This was 30 gms heavier and 10cm longer but at a price of $25.00. One can add a $10.00 battery protection ckt board, making is overall $15.00 cheaper. It could have been $25.00 cheaper but for the shipping cost. 
+2. Step Down Convertors: Two convertors were needed for the system. First one converts 11.1V to 5VDC at a max of 5A, this would supply to Raspberry Pi, and LiDAR motor. The second one also is a 12V to 5V DC convertor but with low ripple. This would supply power exclusively to the LiDAR scanner
+3. Wiring:
+The battery will supply power to three area connected in star-topology. 
+- first will be the two dynamixel servos will be connected to each other using TTL cable. One one end the ttl cable will be connected to battery power. 
+- second will be 12V-5V DC convertor supplying power to RPi, and Lidar motor. It will be placed on the second floor close to its respective sinks
+- third will be 12V-5V SC convertor (low ripple), supplying power to LiDAR scanner, it will be placed on the 3rd floow, close to its respective sink
+
+![wiring diagram](images/power_wiring.png)
+
+
+2. Robotis OpenCR1.0: THis board has a cortex m7 microcontroller and also serves as a power distribution board but its $179.00, one-third the cost of the turtlebot. This board handles communication with Robotis servos using either RS485, UART. So it will interface with any Robotis Servo. I was interested only in using the X series, XL-430 W250T servo. An alternative scheme was to use the U2D3 USB to TTL convertor sold by Robotis. This allows the RPi to communicate to the servo using USB protocol, and interfaces with the half-duplex TTL interface on the servo. It cost $50.00. Most USB to Serial convertors on market, dont do half duplex TTL. So, I search for some hacking solutions, I found a USB to UART convertor from sparkfun (FDTI chip) for $17.00, and I could add some interfacing circuitry to convert it to half-duplex TTL. Overall cost to around $20.00
+
+
+UART to half-duplex: https://devtalk.nvidia.com/default/topic/1039093/half-duplex-uart-from-dev-ttyths2/
 
 
 
@@ -64,5 +95,10 @@ a: current consumption chart in [TM4C123GH6PM datasheet](http://www.ti.com/lit/d
 - [Sensors for Mobile Robot-1](https://www.sensorsmag.com/components/choosing-best-sensors-for-a-mobile-robot-part-one)
 - [Sensors for Mobile Robot-2](https://www.sensorsmag.com/components/choosing-best-sensors-for-a-mobile-robot-part-two)
 - [Advice on Robot for Mapping and Navigation](https://www.reddit.com/r/robotics/comments/3mv3q2/robot_mapping_and_navigation_question/)
-
+- [UART to half duplex1](https://devtalk.nvidia.com/default/topic/1039093/half-duplex-uart-from-dev-ttyths2/)
+- [UART to hald duplex2](https://wot.lv/using-dynamixels-roboplus-without-usb2dynamixel.html)
+- [Dynamixel SDK](http://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_sdk/overview/)
+- Connectors
+  - [Connectors Dynamixel](http://support.robotis.com/en/product/actuator/dynamixel/dxl_connector.htm) 
+  - [Connectors 
 - 
