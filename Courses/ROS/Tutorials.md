@@ -1,4 +1,85 @@
 # ROS Tutorials
+- [Installation](#installation)
+  - [Which Distribution to Use?](#which-distribution-to-use)
+  - [ROS Kinetic Kame Installation Instructions for Ubuntu 16.04 LTS](#ros-kinetic-kame-installation-instructions-for-ubuntu-16-04-lts)
+  - [Maintaining ROS Environment](#maintaining-ros-environment)
+  - [Creating a ROS Workspace](#creating-a-ros-workspace)
+- [Navigating the ROS Filesystem](#navigating-the-ros-filesystem)
+  - [Finding package location](#finding-package-location)
+  - [Navigating to package location](#navigating-to-package-location)
+  - [Listing directory contents](#listing-directory-contents)
+- [Creating a ROS package](#creating-a-ros-package)
+  - [Creating a package using catkin](#creating-a-package-using-catkin)
+  - [Building a catkin workspace](#building-a-catkin-workspace)
+  - [Dependency Management](#dependency-management)
+  - [Customizing the package](#customizing-the-package)
+  - [File Package.xml](#file-package-xml)
+- [Building a ROS package](#building-a-ros-package)
+  - [Using catkin_make](#using-catkin_make)
+  - [Building the Package](#building-the-package)
+- [Understanding Nodes](#understanding-nodes)
+  - [What is a node?](#what-is-a-node)
+  - [Before running a node](#before-running-a-node)
+  - [How to run a node?](#how-to-run-a-node)
+- [Understanding ROS Topics](#understanding-ros-topics)
+  - [Visualizing the ROS graph](#visualizing-the-ros-graph)
+  - [Rostopic](#rostopic)
+    - [Printing Topic data to terminal](#printing-topic-data-to-terminal)
+    - [Listing all topics](#listing-all-topics)
+  - [ROS Messages](#ros-messages)
+  - [Publishing Data](#publishing-data)
+  - [Viewing publish rate](#viewing-publish-rate)
+  - [Combining rostopic type and rosmsg show](#combining-rostopic-type-and-rosmsg-show)
+  - [Using rqt_plot](#using-rqt_plot)
+- [Understanding ROS Services and Parameters](#understanding-ros-services-and-parameters)
+  - [Rosservice](#rosservice)
+    - [Service Type](#service-type)
+    - [Calling a service using Commandline](#calling-a-service-using-commandline)
+  - [Using Rosparam](#using-rosparam)
+    - [Setting and Getting Parameters](#setting-and-getting-parameters)
+  - [Dumping and Loading parameters](#dumping-and-loading-parameters)
+- [Using Rqt_console and roslaunch](#using-rqt_console-and-roslaunch)
+  - [Using rqt_console and rqt_logger_level](#using-rqt_console-and-rqt_logger_level)
+  - [Logger Level](#logger-level)
+  - [Using roslaunch](#using-roslaunch)
+  - [Creating a launch file](#creating-a-launch-file)
+  - [Let's roslaunch](#lets-roslaunch)
+- [Rosed](#rosed)
+- [Creating a ROS message and service](#creating-a-ros-message-and-service)
+  - [Introduction to msg and srv](#introduction-to-msg-and-srv)
+  - [Using msg](#using-msg)
+  - [Using srv](#using-srv)
+  - [Common Step for msg and srv](#common-step-for-msg-and-srv)
+- [Writing a Simple Publisher/Subscriber in C++](writing-a-simple-publisher-subscriber-in-c++)
+  - [Writing a Publisher](#writing-a-publisher)
+  - [Writing a Subcriber](#writing-a-subscriber)
+  - [Building Nodes](#building-nodes)
+- [Writing a Simple Client/Service node](#writing-a-simple-client-service-node)
+  - [Writing the Service node](#writing-the-service-node)
+  - [Writing the Client node](#writing-the-client-node)
+  - [Building your node](#building-your-node)
+- [Recording and Playing Back Data](#recording-and-playing-back-data)
+  - [Recording the data in a bag file](#recording-the-data-in-a-bag-file)
+  - [Recording a subset of data](#recording-a-subset-of-data)
+
+[Catkin](#catkin)
+- [Overview](#overview)
+- [Why does ROS have a custom build system?](#why-does-ros-have-a-custom-build-system)
+- [Catkin Workspace](#catkin-workspace)
+  - [What is a catkin workspace?](#what-is-a-catkin-workspace)
+  - [package.xml structure](#package-xml-structure)
+
+[References](#references)
+
+## Roadmap
+- General ROS
+  - [RViz](http://wiki.ros.org/rviz)
+  - [TF](http://wiki.ros.org/tf2)
+  - [Simulation](http://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/#turtlebot3-simulation-using-gazebo)
+- [Navigation](http://wiki.ros.org/navigation)
+- [ROS on Different Machines](http://wiki.ros.org/ROS/Tutorials/MultipleMachines)
+- [PCL](http://wiki.ros.org/pcl/Tutorials)
+- [rosserial](http://wiki.ros.org/rosserial?distro=melodic)
 
 
 ## Installation
@@ -751,6 +832,324 @@ Now that we have made some changes to the package, we need to rebuild the packag
 > cd ~/catkin_ws
 > catkin_make install
 ```
+Any .msg file in the msg directory will generate code for use in all supported languages. The C++ message header file will be generated in ~/catkin_ws/devel/include/beginner_tutorials/
+
+
+If you are building C++ nodes which use your new messages, you will also need to declare a dependency between your node and your message, as described in the [catkin msg/srv build documentation](http://docs.ros.org/latest/api/catkin/html/howto/format2/building_msgs.html).
+
+
+## Writing a Simple Publisher/Subscriber in C++
+
+### Writing a Publisher
+For our publisher node, we will create a talker, that continuously broadcasts a message. We will store all our node's src code in src folder within package folder. 
+```
+> roscd beginner_tutorials
+> pwd
+> mkdir src
+> cd src
+> touch talker.cpp
+> rosed beginner_tutorials talker.cpp
+```
+What follows is an example c++ node code, briefly it does the following
+1. initialize ros system
+2. advertise that we are going to publish with this name and on this topic etc
+3. loop indefinitely while publishing messages to topic
+
+
+This is how the initial sections of the file will look like. We'll go line by line
+```
+#include "ros/ros.h"
+  28 #include "std_msgs/String.h"
+  29 
+  30 #include <sstream>
+  31 
+  32 /**
+  33  * This tutorial demonstrates simple sending of messages over the ROS system.
+  34  */
+  35 int main(int argc, char **argv)
+  36 {
+  37   /**
+  38    * The ros::init() function needs to see argc and argv so that it can perform
+  39    * any ROS arguments and name remapping that were provided at the command line.
+  40    * For programmatic remappings you can use a different version of init() which takes
+  41    * remappings directly, but for most command-line programs, passing argc and argv is
+  42    * the easiest way to do it.  The third argument to init() is the name of the node.
+  43    *
+  44    * You must call one of the versions of ros::init() before using any other
+  45    * part of the ROS system.
+  46    */
+  47   ros::init(argc, argv, "talker");
+  ```
+  As you can recall, we do name remapping when we invoke the node, invoking the node calls the main with the command line arguments, this arguments are required so that init can process them for name remapping. 
+
+```
+ros::NodeHandle n;
+```
+The is that class object that provides API for communication to the ros node. 
+
+```
+ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
+```
+
+The NodeHandle.advertise API allow node to communicate its intent to be a publisher. One also needs to provide arguments to specify the publish topic name. After invoking advertise, the master has record of this node. It will not advertise its name to all other nodes which subscribe to this channel. advertise returns a Publisher object , this API makes it easy to publish message on the topic through call to publish(). Once all copies of returned publisher are destroyed, the topic will automatically be unadvertised. 
+
+The second parameter to advertise is the size of the message queue. Publishers messages can be buffered if there is a backlog of unsent messages. If there is buffer overflow, messages will be thrown away
+
+```
+ros::Rate loop_rate(10);
+```
+Typically node are run in unending loop like so
+```
+int count = 0;
+while(ros::ok()){
+//do something
+}
+```
+The ROS rate object allow you to specify a frequency that you would like to loop at. It will track down how long it has been since the last call to Rate::sleep() and sleep for the correct amount of time. 
+
+
+For a publisher, these are the typical steps
+```
+while(ros::ok()){
+ // create message object
+ std_msgs::String msg;
+ 
+ std::stringstream ss;
+ ss<<"hello world "<<count;
+ msg.data = ss.str();
+ 
+ ROS_INFO("%s", msg.data.c_str());        # ROS_INFO and friends are our replacement for printf/cout
+  
+ chatter_pub.publish(msg);
+ 
+ ros::spinOnce();
+ 
+ loop_rate.sleep();
+
+ count++;
+}
+```
+
+By default roscpp will install a SIGINT handler which provides Ctrl-C handling that will cause ros::ok() to return false if that happens. In addition, ros::ok() return false if 
+- a SIGINT is received
+- node is kicked off ROS graph network by another node with same name
+- ros::shutdown() has been called by another part of the application
+- all ros::NodeHandles have been destroyed
+
+`ros::spinOnce()` is required if node is subscribed to a topic. 
+
+### Writing a Subcriber
+In brief, we need to do the following
+1. Initialize ROS system
+2. Subscribe to the chatter topic
+3. Spin, waiting for message to arrive
+4. When a message arrives, the chatterCallback() function is called
+
+
+```
+#include "ros/ros.h"
+#include "std_msgs/String.h"
+ 
+/**
+ * This tutorial demonstrates simple receipt of messages over the ROS system.
+*/
+void chatterCallback(const std_msgs::String::ConstPtr& msg)
+{
+   ROS_INFO("I heard: [%s]", msg->data.c_str());
+}
+ 
+int main(int argc, char **argv)
+{
+   ros::init(argc, argv, "listener");
+ 
+   ros::NodeHandle n;
+  
+   ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback);
+  
+   ros::spin();
+  
+   return 0;
+  
+}
+```
+Lets go over the above code line-by-line. 
+
+```
+void chatterCallback(const std_msgs::String::ConstPtr& msg);
+```
+This is the callback function that will get invoked when a new message has arrived on the chatter topic. This message is passed in a boost shared_ptr, which means you can store it off if you want. 
+
+```
+ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback);
+```
+Subscribe to the chatter topic with the master. ROS will call the chatterCallback() function whenever a new message arrives. The 2nd argument is queue size, received messages will be stored in this queue if the node is unable to process them fast enough. If queue overflow, messages will be thrown away. 
+
+```
+ros::spin()
+```
+This function enters a loop, calling message callbacks as fast as possible. If there is nothing for it to do, i.e. no messages are available, it won't hog the CPU. ros::spin() will exit once ros::ok() returnns false.
+
+
+### Building Nodes
+
+Again we need to modify the CMakeLists.txt
+TODO: complicate, come back [later](http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29)
+
+
+## Writing a Simple Client/Service node
+We will learn how to write a client and service node.
+
+
+### Writing the Service node
+Here is an example code of service node
+```
+   1 #include "ros/ros.h"
+   2 #include "beginner_tutorials/AddTwoInts.h"
+   3 
+   4 bool add(beginner_tutorials::AddTwoInts::Request  &req,
+   5          beginner_tutorials::AddTwoInts::Response &res)
+   6 {
+   7   res.sum = req.a + req.b;
+   8   ROS_INFO("request: x=%ld, y=%ld", (long int)req.a, (long int)req.b);
+   9   ROS_INFO("sending back response: [%ld]", (long int)res.sum);
+  10   return true;
+  11 }
+  12 
+  13 int main(int argc, char **argv)
+  14 {
+  15   ros::init(argc, argv, "add_two_ints_server");
+  16   ros::NodeHandle n;
+  17 
+  18   ros::ServiceServer service = n.advertiseService("add_two_ints", add);
+  19   ROS_INFO("Ready to add two ints.");
+  20   ros::spin();
+  21 
+  22   return 0;
+  23 }
+```
+beginner_tutorials/AddTwoInts.h is the header file generated from srv file we created earlier. In the serv file we have define the service request-response structure. 
+
+
+The add functions takes the request and response objects defined in AddTwoInts, and equates the sum of a and b fields of request structure to sum field in response structure. It then returns true. 
+
+The `n.advertiseService` method advertises the service to the master, and also returns a service object. 
+
+
+
+### Writing the Client node
+Here is example code for client node
+```
+   1 #include "ros/ros.h"
+   2 #include "beginner_tutorials/AddTwoInts.h"
+   3 #include <cstdlib>
+   4 
+   5 int main(int argc, char **argv)
+   6 {
+   7   ros::init(argc, argv, "add_two_ints_client");
+   8   if (argc != 3)
+   9   {
+  10     ROS_INFO("usage: add_two_ints_client X Y");
+  11     return 1;
+  12   }
+  13 
+  14   ros::NodeHandle n;
+  15   ros::ServiceClient client = n.serviceClient<beginner_tutorials::AddTwoInts>("add_two_ints");
+  16   beginner_tutorials::AddTwoInts srv;
+  17   srv.request.a = atoll(argv[1]);
+  18   srv.request.b = atoll(argv[2]);
+  19   if (client.call(srv))
+  20   {
+  21     ROS_INFO("Sum: %ld", (long int)srv.response.sum);
+  22   }
+  23   else
+  24   {
+  25     ROS_ERROR("Failed to call service add_two_ints");
+  26     return 1;
+  27   }
+  28 
+  29   return 0;
+  30 }
+```
+This creates a client for add_two_ints service. The returned client object is used to call the service later in the code
+```
+ros::ServiceClient client = n.serviceClient<beginner_tutorials::AddTwoInts>("add_two_ints");
+```
+
+Now we instantiate an autogenerated service class and assign values into its request member. 
+```
+  16   beginner_tutorials::AddTwoInts srv;
+  17   srv.request.a = atoll(argv[1]);
+  18   srv.request.b = atoll(argv[2]);
+```
+
+Finally `client.call(srv)` actually calls the service. Service calls are blocking, so this call will return once the call is completed. If service call succeeds, call() will return true and value in `srv.response` member will be valid, else call will return false, and value in response member will be invalid. 
+
+### Building your node
+TODO: revist this again [later](http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28c%2B%2B%29)
+
+
+## Recording and Playing Back Data
+We will learn how to record data from a running ROS system into a .bag file and then play back the data to produce similar behaviour in a running system. 
+
+### Recording the data in a bag file
+We will focus on capturing the topic data from a running ROS system. The topic data will be accumulated in a bag file. 
+
+We begin by starting ROS system using roscore, and then run two nodes in the turtlesim package namely turtlesim_node and turtle_teleop_key. 
+
+Let's say we want to record all published topics. Here is a list of those
+```
+> rostopic list -v
+Published topics:
+ * /turtle1/color_sensor [turtlesim/Color] 1 publisher
+ * /turtle1/cmd_vel [geometry_msgs/Twist] 1 publisher
+ * /rosout [rosgraph_msgs/Log] 2 publishers
+ * /rosout_agg [rosgraph_msgs/Log] 1 publisher
+ * /turtle1/pose [turtlesim/Pose] 1 publisher
+
+Subscribed topics:
+ * /turtle1/cmd_vel [geometry_msgs/Twist] 1 subscriber
+ * /rosout [rosgraph_msgs/Log] 1 subscriber
+```
+We will created a directory bagfiles, and then record published topic data into a file in this directory.
+```
+> mkdir ~/bagfiles
+> cd ~/bagfiles
+> rosbag record -a          # the -a option indicates that all published topics should be accumulated in a bag file
+```
+The file is automatically created and name according to year,date and time. 
+```
+> ls
+2018-11-05-22-03-06.bag
+```
+
+We use another special sub-command of rosbag to examine the contents of the bag file. These are `rosbag play` and `rosbag info`. Using info, we learn the topic name and the name and number of message types captured by the bag file. 
+
+
+So here is how we replay these messages to replicate the behaviour of the ROS system. We kill the teleop node and play messages
+```
+> rosbag play bagfile
+```
+This will start publishing messages, it waits some time before starting to publishing, to allow subscribers to make connection first, so that no messages are lost. After all messages are published the turtle will start moving and will replicate the actions it had performed before. 
+
+### Recording a subset of data
+rosbag supports logging only particular topic to bagfile. 
+```
+rosbag record -O subset /turtle1/cmd_vel /turtle1/pose
+```
+This will record published data over topic cmd_vel and pose. The data will be stored in a file named subset.bag. 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Catkin
@@ -839,3 +1238,7 @@ catkin_metapackage()
 ```
 5. Additional tags: Additional tags inlcude the <url> and <author> tags. These are self-explanatory. 
 
+
+## References
+- [Client/Service examples](https://github.com/fairlight1337/ros_service_examples/)
+- 
