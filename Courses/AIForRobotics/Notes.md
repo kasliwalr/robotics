@@ -1,8 +1,47 @@
 # AI for Robotics
 
 [Localization](#localization)
-- 
+- [Introduction](#introduction)
+  - [Uncertainity in Robotics](#uncertainity-in-robotics)
+  - [Probabilistic Robotics](#probabilistic-robotics)
+  - [Probabilistic Robotics vs Traditional Robotics](#probabilistic-robotics-vs-traditional-robotics)
+- [Recursive Estimation](#recursive-estimation)
+  - [Basic Concepts of Probability](#basic-concepts-of-probability)
+  - [Robot Environment Interaction](#robot-environment-interaction)
+    - [State](#state)
+    - [Environmental Interaction](#environmental-interaction)
+    - [Probabilistic Generative Laws](#probabilistic-generative-laws)
+    - [Belief Distributions](#belief-distributions)
+  - [Bayes Filters](#bayes-filters)
+- [Localization Problem](#localization-problem)
+  - [Introduction](#introduction)
+  - [Localization Application](#localization-application)
+  - [Intuition About Localization Math](#intuition-about-localization-math)
+  - [Representing probabability Distribution](#representing-probability-distribution)
+  - [Probability After Sense](#probability-after-sense)
+  - [Defining the Sense Function](#defining-the-sense-function)
+  - [Belief Distribution under precise motion](#belief-distribution-under-precise-motion)
+  - [Sensing and Moving](#sensing-and-moving)
+  - [Summary of Localization](#summary-of-localization)
+  - [Bayes Rule](#bayes-rule)
+  - [Theoram of Total Probability](#theoram-of-total-probability)
+
 [Kalman Filters](#kalman-filters)
+- [Tracking Introduction](#tracking-introduction)
+- [Gaussian Distribution](#gaussian-distribution)
+- [Variance Comparison](#variance-comparison)
+- [Programming a Gaussian](#programming-a-gaussian)
+- [Measurements and Motion](#measurements-and-motion)
+- [More measurements gives us more certainity](#more-measurements-gives-us-more-certainity)
+- [Parameter Update](#parameter-update)
+- [Programming New Mean and Variance Term](#programming-new-mean-and-variance-term)
+- [Motion Update - Prediction Step](#motion-update-prediction-step)
+- [Programming the predict function](#programming-the-predict-function)
+- [Kalman Filter Code](#kalman-filter-code)
+- [Multi-D Kalman](#multi-d-kalman)
+- [High Dimensional Gaussians - Multivariate](#high-dimensional-gaussians-multivariate)
+- [Kalman Filter Velocity Prediction](#kalman-filter-velocity-prediction)
+- [Kalman Filter Design](#kalman-filter-design)
 
 [Particle Filters](#particle-filters)
 
@@ -14,6 +53,7 @@
 
 [References](#references)
 
+# Localization
 ## Introduction
 ### Uncertainity in Robotics
 Robots have to deal with uncertainity in the world. Unless they are able to handle this uncertainity, robot applications will remain limited in scope. 
@@ -45,7 +85,7 @@ At the core of probabilistic robotics is the idea of estimating state from senso
 We will learn the basic vocabulary for state estimation and mathematical tools for doing state estimation from sensor data.
 Briefly, we learn probabilistic concepts employed in state estimation, then we cover formal model of robot-environment interaction and associated key terminology. Thirdly, we use Bayes' filter. Finally, we consider representational and computational issues that arise when implementing Bayes filters.
 
-### Basics Concepts of Probability
+### Basic Concepts of Probability
 In probabilisitc robotics, location of robot, sensor measurements, controls are treated as *random variables*. Probabilistic inference is the process of calculating the distributions that govern the random variables that are themselves derived from other random variables and observed data.
 
 //TODO add equations, reference books, material
@@ -137,9 +177,9 @@ In this case belief is known as **prediction**. Calculating *bel(x<sub>t</sub>)*
 
 
 
-## Localization
+## Localization Problem
 
-### The Localization Problem
+### Introduction
 How can we know where we are with accuracy of +/- 10cm. This is much better than GPS. 
 
 ### Localization Application
@@ -285,9 +325,107 @@ Operation of weighted sum over prior probabilities is often called **convolution
 
 
 
+# Kalman Filters
+
+## Tracking Introduction
+The goal for self-driving cars is not only to use sensor data to determine where the obstacles are located but also to determine how fast they are moving. 
+
+We will use Kalman filter to perform tracking. Kalman filters can estimate continous state where in monte carlo localization, we work with discrete states. Both techniques are applicable to robot locatizationa and tracking other objects
 
 
-## Kalman Filters
+We start with idea that if we know the velocity vector history, we can estimate future locations and velocities
+
+![kalman location](images/location_from_vel)
+
+Google self-driving cars uses methods like these. 
+
+## Gaussian Distribution
+In Kalman filter, distribution is over continuous space, not discrete space (like distribution histogram). The area underneath the gaussian distribution sums up to one. This is a parametric distribution parameterized by mean and variance.  It is of the form
+
+$$f(x) = A. exp^{-1/2(x-\mu)^{2}/ \sigma ^ {2}}$$
+
+## Variance Comparison
+The larger the variance, the more uncertain the distribution is. Obvisouly we prefer the distribution with smallest variance. 
+
+## Programming a Gaussian
+In python, this is how we implement a gaussian
+```
+def f(mu, sigma2, x):
+    return 1/sqrt(2.*pi*sigma2)*exp(-0.5*(x-mu)**2/sigma2)
+```
+
+## Measurements and Motion
+Kalman filter iterates two things, measurement updates and motion updates. Here the math changes but the basic principle applies. 
+
+
+![kalman filters](images/kalman_filter.png)
+
+We call the two updates as measurement update and predictions. The measurement update will use Bayes rule, and in prediction we use total probability. 
+
+In tracking the vehicle, we use the prior and the new measurement. Typically the mean of the resulting belief distribution lies between the prior's mean and the measurements means
+
+## More measurements gives us more certainity
+When we combine the prior and the measurements, we get a gaussian which is narrow then both, that is it is more certain about the position of the vehicle
+
+
+![more certain](images/more_certain.png)
+
+## Parameter Update
+The new gaussian has the following parameters
+
+$$\mu ' = (r^{2}*\mu + \sigma ^{2}*v)/(r^{2} + \sigma ^{2})$$
+
+$$\sigma '^{2} = 1/(1/r^{2} + 1/\sigma ^{2})$$
+
+
+## Programming New Mean and Variance Term
+```
+def update(mean1, var1, mean2, var2):
+    newmean = (mean1*var2 + mean2*var1)/(var1 + var2)
+    newvar = 1/(1/var1 + 1/var2)
+    return [newmean, newvar]
+```
+
+## Motion Update - Prediction Step
+
+When we move, we end up in the desired mean position but our certainty about our position decreases. This is modeled as an increase in the variance of the gaussian
+
+$$\mu ' = \mu + u$$
+$$\sigma '^ {2} = \sigma ^{2} + r^{2}$$
+
+
+## Programming the predict function
+def update(mean1, var1,mean2, var2):
+    newmean = mean1 + mean2
+    newvar = var1 + var2
+    return [newmean, newvar]
+    
+## Kalman Filter Code
+We are given a sequence of measurements and motions. We will use update and predict steps to estimate the final estimate for position
+
+## Multi-D Kalman
+In practical settings, there are multiple dimentions. It is able to figure out the velocity of the object from multiple position measurements
+
+## High Dimensional Gaussians - Multivariate
+Mean is now a vector with one number of each dimention. The variance is now a matrix with D rows and D columns if the dimentionality of the problem is D
+
+
+## Kalman Filter Velocity Prediction
+
+![velocity prediction](images/velocity_prediction.png)
+
+Variables of Kalman Filter : called states.
+Observables and Hidden variables. The hidden variables are estimated because of a physical relationship between hidden and observables. 
+
+## Kalman Filter Design
+Need a state transition function, usually a matrix.
+FOr the measurement we need a measurement function
+
+![KF design](images/KF_design.png)
+
+Actual update equations for Kalman filter are involved. One should try to get an intuitive understanding of it. 
+
+![KF_high_dim](images/KF_high_dim.png)
 
 ## Particle Filters
 
