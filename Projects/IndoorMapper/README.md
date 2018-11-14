@@ -54,11 +54,150 @@ a: current consumption chart in [TM4C123GH6PM datasheet](http://www.ti.com/lit/d
 
 ## Hardware Schematic
 
-#### Dynamixel -- RPi 
-Driving Dyanmixel using Raspberry Pi.
-
+### Dynamixel
 Keywords: Dynamixel SDK C/C++ API, Dynamixel Protocol 2.0, USB2Dynamixel, U2D2, Protocol 2.0, Control Table, EEPROM Area, RAM Area
 On linux, Dynamixel SDK is available as shared library (.so) as well as source code. Examples are also available
+
+#### Overview
+
+ROBOTIS Dynamixel SDK is a software development kit that provides Dynamixel control functions using packet communication. The Dynamixel API requires programming in C/C++. We wull use the recommended Protocol 2.0 for communicating with the X-series servo. We will test the SDK on Ubuntu 16.04 LTS running on Intel X86 and Raspbian running on Raspberry Pi 3. We will use FT232RL serial board from Sparkfun with custom circuit to perform half-duplex communication with the servo. Finally we will also test the dynamixel using ROS C++ package on Ubunutu or Raspbian. 
+
+
+##### Installation
+
+We cloned the dynamixel repository on github: https://github.com/ROBOTIS-GIT/DynamixelSDK
+```
+> git clone https://github.com/ROBOTIS-GIT/DynamixelSDK.git
+```
+We also installed the ROS library
+```
+>sudo apt-get install ros-kinetic-dynamixel-sdk      # we are using ROS-Kinetic
+```
+Before we start exploring the library, we will install hardware driver for FT232L
+
+
+FDTI devices have two types of driver - virual COM port driver (VCP) and D2XX API driver. FTDI VCP driver is build into the Linux kernel. In Linux, VCP drivers will appear as /dev/ttyUSBx.
+
+Verify built-in COM port
+1. Plug in FTDI device
+2. In terminal window
+```
+> dmesg | grep FTDI
+# The following output should be generated
+[334680.372193] usb 2-1.2.2: Manufacturer: FTDI
+[334681.410183] usbserial: USB Serial support registered for FTDI USB Serial Device
+[334681.410249] ftdi_sio 2-1.2.2:1.0: FTDI USB Serial Device converter detected
+[334681.410899] usb 2-1.2.2: FTDI USB Serial Device converter now attached to ttyUSB0
+[334683.068937] ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
+[334693.939291] usb 2-1.2.2: Manufacturer: FTDI
+[334693.942056] ftdi_sio 2-1.2.2:1.0: FTDI USB Serial Device converter detected
+[334693.942666] usb 2-1.2.2: FTDI USB Serial Device converter now attached to ttyUSB0
+[334696.892600] ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
+[334718.771810] usb 2-1.2.2: Manufacturer: FTDI
+[334718.774809] ftdi_sio 2-1.2.2:1.0: FTDI USB Serial Device converter detected
+[334718.775587] usb 2-1.2.2: FTDI USB Serial Device converter now attached to ttyUSB0
+[334889.403163] ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
+[334903.601907] usb 2-1.2.2: Manufacturer: FTDI
+[334903.604827] ftdi_sio 2-1.2.2:1.0: FTDI USB Serial Device converter detected
+[334903.605279] usb 2-1.2.2: FTDI USB Serial Device converter now attached to ttyUSB0
+[334915.771189] ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
+[334925.854973] usb 2-1.2.2: Manufacturer: FTDI
+[334925.858182] ftdi_sio 2-1.2.2:1.0: FTDI USB Serial Device converter detected
+[334925.858748] usb 2-1.2.2: FTDI USB Serial Device converter now attached to ttyUSB0
+```
+
+### Dynamixel SDK 
+
+#### File Structure
+Example codes are using either C/C++. Dynamixel SDK repo folder contains folders for each supported API language. We are interested in C++. 
+
+In c++ folder, you'll find cpp source files, header files, build files and example codes. 
+
+
+![sdl lib structure](images/sdk_library_struct.png)
+
+Though the PortHandler which handles system communication environment is separated in three OS, the Linux, the macOS and the Windows, the other sources are made to be able to be cross-compiled. We use a separate Makefile for each environment to build the src code. 
+
+There is example code in `example` folder. For us, the subfolder `protocol2.0` containst the relevant example code. There are platform specific Makefiles in example/protocol2.0 to build the example code. 
+
+
+
+The dynamixel SDK expect the device name to be `/dev/ttyUSB0` for linux system, we have verified that to be the case. 
+
+Note: The SDK has been tested on Ubuntu 16.04 and Raspbian Jessie, which we are using. 
+
+#### Library Setup
+For detailed instruction, see [here](http://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_sdk/library_setup/cpp_linux/#cpp-linux)
+
+1. Compiler: GNU gcc ver. 5.4.0 20160609 or higher
+```
+> gcc -v
+gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.10) 
+```
+2. Builder
+```
+> sudo apt-get install build-essential
+```
+3. Dependent Packages: packages needed for cross-compiling
+```
+> sudo apt-get install gcc-multilib g++-mulitlib
+```
+4. Build the library: navigate to `linux64` subdirectory in `build`
+```
+> pwd
+/home/rk/repos/DynamixelSDK/c++/build/linux64
+```
+5. Invoke make: This will generate a shared library file, `libdxl_x64_cpp.so`
+6. Install the library: 
+```
+> sudo make install
+```
+#### Running the Sample Code
+1. Navigate to example code for linux64
+```
+> pwd   
+/home/rk/repos/DynamixelSDK/c++/example/protocol2.0/read_write/linux64
+```
+2. Invoke make
+```
+> make
+> ls
+Makefile  read_write
+```
+3. Make the port available to be used
+> sudo chmod a+rw /dev/ttyUSB0
+```
+4. Run the executable
+```
+> ./read_write
+```
+Succeeded to open the port!
+Succeeded to change the baudrate!
+Dynamixel has been successfully connected 
+```
+
+Robotis also provides code for interactive control through `dxl_monitor`. Navigate to dxl_monitor folder
+```
+> pwd
+/home/rk/repos/DynamixelSDK/c++/example/dxl_monitor
+```
+Navigate to `linux64` folder, and make
+```
+> pwd
+/home/rk/repos/DynamixelSDK/c++/example/dxl_monitor/linux64
+> make
+> ./dxl_monitor            # run to go into interactive mode
+> ?                        # list command help
+```
+Use XL430-250T parameters as specified [here](http://emanual.robotis.com/docs/en/dxl/x/xl430-w250/#control-table-description)
+
+
+
+### Hardware Installation
+
+
+Circuit Diagram image needed
+Picture of the actual connection
 
 
 
@@ -101,4 +240,10 @@ UART to half-duplex: https://devtalk.nvidia.com/default/topic/1039093/half-duple
 - Connectors
   - [Connectors Dynamixel](http://support.robotis.com/en/product/actuator/dynamixel/dxl_connector.htm) 
   - [Connectors 
-- 
+- [XL430-W250T Control Table](http://emanual.robotis.com/docs/en/dxl/x/xl430-w250/#control-table-description)
+- [Dynamixel SDK C++ library Setup](http://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_sdk/library_setup/cpp_linux/#cpp-linux)
+- [Dynamixel Protocol 2.0](http://emanual.robotis.com/docs/en/dxl/protocol2/)
+- [RPiLIDAR SDK](https://github.com/Slamtec/rplidar_sdk)
+- [RpiLIDAR User Manual](docs/slamtec_lidar_user_man.pdf)
+- [RpiLIDAR Protocol](docs/slamtec_lidar_interface_protocol.pdf)
+
