@@ -192,6 +192,20 @@ Navigate to `linux64` folder, and make
 Use XL430-250T parameters as specified [here](http://emanual.robotis.com/docs/en/dxl/x/xl430-w250/#control-table-description)
 
 
+### RPiLIDAR
+
+### RPLIDAR SDK
+We will detail use of RPLIDAR SDK on Ubuntu 16.04 LTS. 
+
+1. Clone the open source SDK from github repository
+```
+git clone https://github.com/Slamtec/rplidar_sdk.git
+```
+2. 
+
+
+
+
 
 ### Hardware Installation
 
