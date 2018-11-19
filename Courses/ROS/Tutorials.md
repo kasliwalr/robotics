@@ -1587,18 +1587,170 @@ rosbag record -O subset /turtle1/cmd_vel /turtle1/pose
 This will record published data over topic cmd_vel and pose. The data will be stored in a file named subset.bag. 
 
 
+## Rviz
+
+Keywords: Displays, 3D-view
+
+### Introduction
+rviz is a 3-D visualization environment. It lets us visualize what the robot is seeing, thinking and doing. Developing a robot can be difficult if we don't know what the robot thinks is going on in the world. Debugging 3D by numbers alone is not easy, rviz enables us by providing a 3D view of robot's worldview. 
+
+There are two main ways of putting data inside rviz. Rviz understands sensor and state information. Secondly there are visualization markers that let the programmer send cubes, arrows and lines. The combination of sensor data and custom visualization marker makes it a powerful tool. 
+
+The ROS navigation stack uses a combination of these to show its current path, obstacle data, 3D voxel grid and topological map. 
 
 
+### Installation
+We will install rviz from debian repository
+```
+> sudo apt-get install ros-kinetic-rviz
+```
+
+### Startup
+Rviz runs as a ros node. Before starting rviz, roscore needs to be invoked
+```
+> roscore
+> rosrun rviz rviz         # run rviz node from roscore package
+```
+This will open the rviz gui window
+
+![rviz window](images/rviz_window.png)
+
+The grid window in the middle is the 3D view. On the left is the Displays list which will show any displays you have loaded. On the right are some other panels described below. 
+
+### Displays Panel
+A display is something that draws something in the 3D world, and likely has some options available in the displays list. An example is a point cloud which can be displayed in the display
+
+#### Adding a new display
+A new display is added by clicking the add button which will pop a display dialog. It contains a list of display types which details what kind of data this display can accept. Here you must provide a unique name for the display you want to import. 
 
 
+#### Display Properties
+Each display that has been added to the display panel, has a set of properties. 
+
+#### Display Status
+Each display gets its own status to help let you know if everything is OK or not. The status can be one of 4: **OK, Warning, Error and Disabled.** The status is indicated in the display's title by the background color as well as in the Status Property. 
 
 
+#### Built-in Display Types
+There are a bunch of in-build display types. Here is a [list](http://wiki.ros.org/rviz/DisplayTypes/)
 
 
+### Configurations
+Different configurations of displays are often useful for different uses of the visualizer. A configuration usefl for a full PR2 is not necessarily useful for a test cart. To help with this, the rviz lets you load and save different display configurations. 
+
+A configuration consists of :
+1. Displays + their properties
+2. Tool properties
+3. Camera type + settings for the initial viewpoint
+
+### View Panel
+There are a number of different camera types (not related to real cameras) available in the visualizer. Camera types consist both of different ways of controlling the camera and different types of projection (Orthographic vs. Perspective).
+
+#### Different Camera Types
+1. Orbital Camera:  Orbital camera simply rotates around a focal point, while always looking at that point.
+2. FPS (first-person) Camera: FPS camera is a first-person camera, so it rotates as if you're looking with your head i.e. you are walking through the scene
+3. Top-down Orthographic: Always looks down along the Z axis (in the robot frame), and is an orthographic view which means things do not get smaller as they get farther away.
+4. XY Orbit: Same as the orbital camera, with the focus point restricted to the XY plane.
+5. Third Person Follower: camera maintains a constant viewing angle towards the target frame. In contrast to XY Orbit the camera turns if the target frame yaw
+
+#### Views
+Views panel also lets you create different named views, which are saved and can be switched between. A view consists of a target frame, camera type and camera pose.
 
 
+### Coordinate Frames
+rviz uses the tf transform system for transforming data from the coordinate frame it arrives in into a global reference frame. 
+
+There are two coordinate frames that are important to know about 
+#### The Fixed Frame 
+The fixed frame is the reference frame used to denote the "world" frame, this is usually the map or world. Sometimes it can also be the odometry frame
+
+#### Target Frame
+The target frame is the reference frame for the camera view.  If you target frame is the map, you'll see robot driving around the map, if your target frame is the base of the robot, the robot will stay in the same place while everything else moves. 
+
+### Tools
+Visualizer has a number of tools in the toolbar
+
+#### Move Camera
+When this is selected, the current View gets to do its thing when you click inside the 3d view
+
+#### Select
+The Select tool allows you to select items being displayed in the 3D view. It supports single-point selection as well as click/drag box selection.
 
 
+#### 2D Nav Goal
+This tool lets you set a goal sent on the "goal" ROS topic. Click on a location on the ground plane and drag to select the orientation:
+
+This tools works with the navigation stack. 
+
+#### 2D Pose Estimate
+This tool lets you set an initial pose to seed the localization system (sent on the "initialpose" ROS topic). Click on a location on the ground plane and drag to select the orientation
+
+This tool works with the navigation stack
+
+### Time
+when running in a simulator: it allows you to see how much ROS Time time has passed, vs. how much "Wall Clock" (aka real) time has passed
+
+### Stereo
+Rviz can render in 3D stereo if you have a graphics card, monitor, and glasses that support that
+
+### Plugins
+rviz is setup so that new displays can be added through plugins. In fact, even the built-in displays are loaded through the "default" plugin.
+
+
+# TF2 
+tf2 is the 2nd generation of the transform library. It lets user keep track of multiple coordinate frames over time. tf2 uses a tree data structure to codify relationships b/w coordinate frames. This data structure is buffered in time. It offers the user the API to transform points and vectors between any two coordinate frames at any desired point in time. 
+
+## What does tf2 do? Why should we use it?
+
+What does it do? 
+
+Why? A robotic system has many 3D coordinate frames (gripper frame, base frame etc) that change over time. We would like to know their relative pose of one frame wrt other. tf2 can operate in distributed manner i.e. all information about coordinate frames of a robot is available to all ROS components on any computer in the system. 
+
+## Paper
+
+Refer to [Foote_2013](http://wiki.ros.org/Papers/TePRA2013_Foote?action=AttachFile&do=view&target=TePRA2013_Foote.pdf)
+
+## Tutorial - Introduction to tf2
+It demonstrates tf2 in a multi-robot example using turtlesim
+
+### Demo Installation
+```
+> sudo apt-get install ros-kinetic-turtle-tf2 ros-kinetic-tf2-tools ros-kinetic-tf
+```
+
+### Demo launch
+Launch the demo
+```
+roslaunch turtle_tf2 turtle_tf2_demo.launch
+```
+
+This launches the demo. We see that there are two turtles. When the first turtle is made to move, the second turtle chases it. Let's understand what's happening behind the scenes
+
+The demo is using tf2 library to create 3 coordinate frames - turtle1, turtle2 and world frame. The tf2_broadcaster publishes the turtle coordinate frames and tf2_listerner computes the difference (transform) b/w the turtle frames. This allows the second turtle to use this information to move towards the first turtle. 
+
+### tf2_Tools Usage
+Let's look at how tf2 is being used to create this demo. We can use tf2 tools to look at what tf2 is doing behind the scenes. 
+
+##Using view_frames
+view_frames creates a diagram of the frames being broadcast by tf2 over ROS. 
+```
+> rosrun tf2_tools view_frames.py
+``
+To view the generated tree, see the image below
+![tf_tree](images/tf_tree.png)
+
+Here we see three nodes (3 frames) that are broadcast by tf. The world frame is the parent of turtle1 and turtle2 frames. view_frames also report some diagnostic information about when the oldest and most recent frame transforms were received and how fast the tf2 frame is published to tf2 for debugging purposes.
+
+## Using tf_echo
+tf_echo reports the transform between any two frames broadcast over ROS.
+```
+> rosrun tf tf_echo turtle1 turtle2 #  rosrun tf tf_echo ref_frame target_frame
+```
+## Viewing tf2 output in rviz
+```
+> rosrun rviz rviz -d `rospack find turtle_tf2`/rviz/turtle_rviz.rviz
+```
+This will open the rviz window with display list consisting of tf transform. 
 
 # Catkin
 
@@ -1612,6 +1764,8 @@ ROS utilizes catkin as a custom build system which extends CMake to manage depen
 
 ## Why does ROS have a custom build system?
 In short conventional tools like `Make`, `CMake` etc are difficult to use on larger projects like ROS. In additional ROS is a collected of larger number of heretergenous packages, which sometimes have their own directory structure and slightly different build rules. catkin tries to make it easier to build and share ROS packages.
+
+
 
 ## Catkin Workspace
 catkin packages can be built as standalone projects, in the same way cmake projects can be built. Catkin however, provides support for workspaces, where it can build multiple, interdependent packages together all at once. 
