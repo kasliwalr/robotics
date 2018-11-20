@@ -203,8 +203,18 @@ git clone https://github.com/Slamtec/rplidar_sdk.git
 ```
 2. 
 
+### Cleaning up Raspberry Pi
+Raspberry Pi has lot of bloatware which takes up space on the SD card. We will show steps to remove unnecessary software installed on Raspberry Pi
+```
+> sudo apt-get purge wolfram-engine
+> sudo apt-get clean; sudo apt-get autoremove
+> sudo apt-get purge libreoffice*
+> sudo apt-get clean; sudo apt-get autoremove
+> 
 
 
+
+### Running ROS on multiple machines
 
 
 ### Hardware Installation
@@ -238,6 +248,9 @@ The battery will supply power to three area connected in star-topology.
 UART to half-duplex: https://devtalk.nvidia.com/default/topic/1039093/half-duplex-uart-from-dev-ttyths2/
 
 
+### ROS Installation Raspberry Pi
+
+[ROS Kinetic Installation on Raspberry Pi Stretch](http://wiki.ros.org/action/fullsearch/ROSberryPi/Installing%20ROS%20Kinetic%20on%20the%20Raspberry%20Pi?action=fullsearch&context=180&value=linkto%3A%22ROSberryPi%2FInstalling+ROS+Kinetic+on+the+Raspberry+Pi%22)
 
 
 ## Notes
