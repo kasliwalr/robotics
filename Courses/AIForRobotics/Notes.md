@@ -44,6 +44,16 @@
 - [Kalman Filter Design](#kalman-filter-design)
 
 [Particle Filters](#particle-filters)
+- [Overview](#overview)
+- [Using Robot Class](#using-robot-class)
+- [Moving Robot](#moving-robot)
+- [Robot World](#robot-world)
+- [Creating Particles](#creating-particles)
+- [Robot Particles](#robot-particles)
+- [Importance Weight](#importance-weight)
+- [Resampling](#resampling)
+- [New Particle](#new-particle)
+- [Error](#error)
 
 [Search](#search)
 
@@ -428,6 +438,35 @@ Actual update equations for Kalman filter are involved. One should try to get an
 ![KF_high_dim](images/KF_high_dim.png)
 
 ## Particle Filters
+
+### Comparison of Kalman and Histogram Filters
+
+|Filter Type|State Space|Belief Distribution|Efficiency|In Robotics|
+|-----------|-----------|------------------------------|-----------|
+|Histogram Filters|Discrete|Multimodal|Exponential|Approximate|
+|Kalman Filters|Continuous|Unimodal|Quadratic|Approximate|
+|Particle Filters|Continuous|Multimodal|?|Approximate|
+
+Kalman filters are approximate, they are exact only for linear systems, whereas world is non-linear. In tracking domains partcile filters scale much better. The key advantage is that they are easy to program.
+
+### Overview of Particle Filters
+Below is a floor plan of an office space, where a robot has to perform **global localization**. Robot has to use the range sensors to determine a posterior distribution of where it is. 
+![particle filter](images/particle_filter.png)
+
+Now a particle filter represents the robots location as a set of particles. Each red dot, is a discrete guess of where the robot might be (x, y coordinate). A single guess is not a filter, a filter is a set of thousands of such guesses that comprise the posterior distribution of robot's location. As you can see, in the beginning the particles are uniformly spread. 
+
+
+Particles only survive if they are consistent with the sensor measurement as shown below.
+![cleaned particle filter](images/cleaned_particle_filter.png)
+
+
+### Importance Weights
+
+
+### Resampling
+
+
+### Creating Particles
 
 ## Search
 
