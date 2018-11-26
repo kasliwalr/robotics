@@ -201,7 +201,6 @@ We will detail use of RPLIDAR SDK on Ubuntu 16.04 LTS.
 ```
 git clone https://github.com/Slamtec/rplidar_sdk.git
 ```
-2. 
 
 ### Cleaning up Raspberry Pi
 Raspberry Pi has lot of bloatware which takes up space on the SD card. We will show steps to remove unnecessary software installed on Raspberry Pi
@@ -211,7 +210,7 @@ Raspberry Pi has lot of bloatware which takes up space on the SD card. We will s
 > sudo apt-get purge libreoffice*
 > sudo apt-get clean; sudo apt-get autoremove
 > 
-
+```
 
 
 ### Running ROS on multiple machines
