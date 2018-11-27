@@ -216,6 +216,87 @@ Raspberry Pi has lot of bloatware which takes up space on the SD card. We will s
 ### Running ROS on multiple machines
 
 
+#### Configuring Raspberry Pi for Internet over Wifi
+For our purposes, we would like to remotely configure / control Turtlebot from our PC. The onboard Raspberry Pi is capable of connectivity over Ethernet and Wifi. We would configure its Wifi, so that we can connect to it over our home Wifi network. 
+In future, we could use this same home Wifi router to communicate to Turtlebot and view its status over the internet from anywhere in the world. 
+
+Based on the guidelines here, we configured the wireless interface first. We configured it for home network, with a netmask of `255.255.255.0` and gateway of `192.xxx.xxx.xxx`. The ip address was statically assigned. On Raspbian, interface are configured by editing the /etc/network/interfaces file. Our file looked as follows
+
+```
+# ethernet config
+auto eth0
+iface eth0 inet static
+    address 192.xxx.xxx.xxx
+    netmask 255.255.255.0
+    gateway 192.xxx.xxx.xxx
+
+# wifi config
+auto wlan0
+allow-hotplug wlan0
+iface wlan0 inet static
+    address 192.xxx.xxx.xxx
+    netmask 255.255.255.0
+    gateway 192.xxx.xxx.xxx
+    wpa-conf /path_to_wpa_supplicant/wpa_supplicant.conf
+
+source-directory /path_to_interfaces.d/interfaces.d
+```
+
+Then we configured the wpa_supplicant.conf. This file is read by the wpa_supplicant daemon, to perform wpa_client actions on the host machine. 
+
+```
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=US
+
+network={
+        ssid="My_SSID"
+        scan_ssid=1
+        psk="pass_phrase"
+        key_mgmt=WPA-PSK
+}
+```
+We had to provide the `scan_ssid=1` field, because our SSID is hidden. The result of the fields are standard.
+
+To test the Wifi, the ethernet was disconnected, and Pi was rebooted. On reboot, we did an ssh into Pi from our PC. 
+```
+> ssh pi@192.xxx.xxx.xxx
+pi@192.xxx.xxx.xxx's password:
+```
+This indicates that we can communicate to Raspberry Pi over the home-WLAN. 
+
+#### Communicating over multiple Machines using ROS
+We intend to run some nodes on Raspberry Pi, and computation intensive nodes and ROS master on PC. To verify, that we could do so, we tested communication between talker and listener nodes running on Raspberry PI and PC respectively. 
+
+It is assumed that ROS has already been installed on Raspberry Pi. We followed the ROS tutorial provided [here](http://wiki.ros.org/ROS/Tutorials/MultipleMachines)
+
+1. Start ROS on PC
+```
+# start ROS master on PC
+> roscore
+# configure ROS_MASTER_URI
+> export ROS_MASTER_URI=http://pc_ip:11311
+# run listener
+> rosrun rospy_tutorials listener.py
+```
+2. Start ROS on Raspberry Pi
+```
+# ssh to Pi
+> ssh pi@192.xxx.xxx.
+# Configure ROS_MASTER_URI
+> export ROS_MASTER_URI=http://pc_ip:11311
+#configure ROS_IP
+> export ROS_IP=Raspi_wlan_ip
+# run talker
+> rosrun rospy_tutorials talker.py
+```
+This should start showing messages sent by talker to listener, on the PC. If successful, we are done. Now we have a distributed ROS system, where master runs on PC, and other ROS nodes run on either PC or Raspberry Pi. 
+
+
+
+
+
+
 ### Hardware Installation
 
 
