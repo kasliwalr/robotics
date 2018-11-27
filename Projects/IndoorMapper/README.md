@@ -333,6 +333,89 @@ UART to half-duplex: https://devtalk.nvidia.com/default/topic/1039093/half-duple
 [ROS Kinetic Installation on Raspberry Pi Stretch](http://wiki.ros.org/action/fullsearch/ROSberryPi/Installing%20ROS%20Kinetic%20on%20the%20Raspberry%20Pi?action=fullsearch&context=180&value=linkto%3A%22ROSberryPi%2FInstalling+ROS+Kinetic+on+the+Raspberry+Pi%22)
 
 
+#### Dynamixel Installation on Raspberry Pi
+We are interested in installing the following ROS packages for dynamixel - dynmixel_sdk, dynamixel-workbench-toolbox, dynamixel-workbench-controllers, dynamixel-workbench-operators. We will download the catkin packages into a separate workspace and then build packages using catkin. 
+
+We will install the following dependencies before hand - sensor_msgs. In our bare bones installation of ROS on raspberry Pi, we did not install these packages. 
+
+Navigate to ros_catkin_ws. 
+```
+> cd ~/ros_catkin_ws
+> rosinstall_generator sensor_msgs --rosdistro kinetic --deps --wet-only --tar > kinetic-custom_ros.rosinstall
+> wstool merge -t src kinetic-custom_ros.rosinstall
+> wstool update -t src/
+> rosdep install --from-paths src --ignore-src --rosdistro kinetic -y -r --os=debian:stretch
+> sudo ./src/catkin/bin/catkin_make_isolated --install -DCMAKE_BUILD_TYPE=Release --install-space /opt/ros/kinetic
+> source devel_isolated/setup.bash
+> rospack find sensor_msgs
+/home/pi/ros_catkin_ws/src/common_msgs/sensor_msgs
+```
+We created a separate directory dyanmixel_ws
+```
+> mkdir -p dynamixel_ws/src
+> cd dynamixel_ws/src
+> git clone https://github.com/ROBOTIS-GIT/dynamixel-workbench.git
+> ls 
+dynamixel-workbench
+```
+Lets view the package dependecies
+```
+> cd dynamixel-workbench
+> find -P -name package.xml| while read line; do echo $line; cat $line | grep depend; done
+./dynamixel_workbench_single_manager_gui/package.xml
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>qtbase5-dev</depend>
+  <depend>qt5-qmake</depend>
+  <depend>dynamixel_workbench_msgs</depend>
+  <depend>dynamixel_workbench_toolbox</depend>
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-gui</exec_depend>
+./dynamixel_workbench_operators/package.xml
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>dynamixel_workbench_msgs</depend>
+./dynamixel_workbench/package.xml
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>dynamixel_workbench_controllers</exec_depend>
+  <exec_depend>dynamixel_workbench_operators</exec_depend>
+  <exec_depend>dynamixel_workbench_single_manager</exec_depend>
+  <exec_depend>dynamixel_workbench_single_manager_gui</exec_depend>
+  <exec_depend>dynamixel_workbench_toolbox</exec_depend>
+./dynamixel_workbench_controllers/package.xml
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>dynamixel_workbench_msgs</depend>
+  <depend>dynamixel_workbench_toolbox</depend>
+./dynamixel_workbench_toolbox/package.xml
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>dynamixel_sdk</depend>
+./dynamixel_workbench_single_manager/package.xml
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>dynamixel_workbench_msgs</depend>
+  <depend>dynamixel_workbench_toolbox</depend>
+```
+One can see that `/dynamixel_workbench_single_manager_gui` has additional dependencies. This package is for GUI based dynamixel control, which we don't need. So lets eliminate this package, and bring out the rest of the packages into the source directory
+```
+> rm -rf dynamixel_workbench dynamixel_workbench_single_manager_gui
+> mv dynamixel_workbench* ../
+> cd ../
+> rm -rf dynamixel_workbench
+```
+Now let's build
+```
+> catkin_make
+# build complete
+> source devel/setup.sh
+````
+
+
+
+
 ## Notes
 - are vision+encoder based sensing sufficient for localization in indoor environments
 - [ROS-Serial](http://wiki.ros.org/rosserial) communicating to embedded hardware (TIVA/Arduino) from ROS using serial communication
