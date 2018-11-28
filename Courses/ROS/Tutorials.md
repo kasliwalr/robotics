@@ -1840,6 +1840,18 @@ catkin_metapackage()
 ```
 5. Additional tags: Additional tags inlcude the <url> and <author> tags. These are self-explanatory. 
 
+## Navigation Stack
+The job of thenavigation stack is to take information from odometry and sensor streams and output velocity commands to a mobile base. A navigation stack requires that the robot should be publishing sensor messages of the correct type and have a tf transform tree in place. The navigation stack also needs to be configured for the shape and dynamics of the specific robot to perform at a high level. 
+
+Navigation stack assumes that the mobile platform is controlled by sending desired velocity commands in form of x, y and theta velocity. It requires a planer laser mounted somewhere on the base. 
+
+### Setup and Configuration of Navigation Stack on Robot
+Navigation stack assumes that robot is configured in a particular manner in order to run. The diagram below shows an overview of the configuration
+![navigation overview](images/navigation.png)
+The white components are required components. The blue components must be created for each robot. Gray components are optional and already implemented. 
+
+1. Setup up the [transform configuration](http://wiki.ros.org/navigation/Tutorials/RobotSetup/TF)
+2. 
 
 ## References
 - [Client/Service examples](https://github.com/fairlight1337/ros_service_examples/)
