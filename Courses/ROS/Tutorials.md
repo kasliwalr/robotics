@@ -1249,7 +1249,146 @@ Navigation stack assumes that robot is configured in a particular manner in orde
 The white components are required components. The blue components must be created for each robot. Gray components are optional and already implemented. 
 
 1. Setup up the [transform configuration](http://wiki.ros.org/navigation/Tutorials/RobotSetup/TF)
-2. 
+2. Sensor Information
+3. Odometry Information
+4. Base Controller
+5. Mapping
+
+### Transform Configuration
+We will understand the basics of transform configuration. We will use these techniques to configure the transform for our turtlebot. 
+
+Lets assume we have a robot with a geometry identified in the image below
+![robot geometry](images/robot_geometry.png)
+
+
+To define and store the relationship between base_link and base_laser frames using tf, we need to add them to a transform tree. To create a trasnform tree for our simple example, we'll create two nodes, one for "base_link" and other for "base_laser" coordinate frames. Before creating edges, we need to assign one node as parent or reference node. Assuming base_link to be the parent, we calculate transform as 
+x:0.1, y:0, z:0.2. 
+
+Once this transform tree is setup, converting the laser scan received in base_laser to base_link is done by making a call to tf library. 
+
+Let's make this concrete by looking at some code
+
+#### Code Description
+Our goal is to transform the laser data to base_link frame. So how to build the transform tree. 
+
+First, we create a node responsible for publishing the transform in our system. Next we create a listener node to transform data published over ROS. This node will be capable of applying the transform to a point. 
+
+We will create a catkin package for our robot. 
+```
+> mkdir -p ~/tutorial_ws/src
+> cd ~/tutorial_ws/src/
+> catkin_create_pkg robot_setup_tf roscpp tf geometry_msgs  # these are dependencies for this package
+```
+**Broadcaster Node**</br>
+Now we create the broadcaster node, which will broadcast the base_laser -> base_link transform over ROS. 
+```
+> cd robot_setup_tf/src
+> touch tf_broadcaster.cpp
+```
+The file snippet is shown below
+```
+#include <ros/ros.h>
+#include <tf/transform_broadcaster.h>
+
+int main(int argc, char** argv){
+  ros::init(argc, argv, "robot_tf_publisher");
+  ros::NodeHandle n;
+
+  ros::Rate r(100);
+
+  tf::TransformBroadcaster broadcaster;
+
+  while(n.ok()){
+    broadcaster.sendTransform(
+      tf::StampedTransform(
+        tf::Transform(tf::Quaternion(0, 0, 0, 1), tf::Vector3(0.1, 0.0, 0.2)),
+        ros::Time::now(),"base_link", "base_laser"));
+    r.sleep();
+  }
+}
+```
+We use the `tf::TransformBroadcaster` object, to publish transforms. The `sendTransform` method requires 5 arguments which are
+1. rotation transform: this is in quaternion format
+2. translation transform: we determine the position of laser_link w.r.t. base_link. 
+3. timestamp: time at which this transform was calculated
+4. parent node: name of parent node
+5. child node: name of child node
+
+
+**Using Transform: Listener Node**</br>
+We are going to write a node that uses the published transform. It will take a point in laser_link frame as input and transform it to represent it in base_link frame. 
+
+```
+> touch tf_listener.cpp
+```
+The file snippet is shown below
+```
+#include <ros/ros.h>
+#include <geometry_msgs/PointStamped.h>
+#include <tf/transform_listener.h>
+
+void transformPoint(const tf::TransformListener& listener){
+  //we'll create a point in the base_laser frame that we'd like to transform to the base_link frame
+  geometry_msgs::PointStamped laser_point;
+  laser_point.header.frame_id = "base_laser";
+
+  //we'll just use the most recent transform available for our simple example
+  laser_point.header.stamp = ros::Time();
+
+  //just an arbitrary point in space
+  laser_point.point.x = 1.0;
+  laser_point.point.y = 0.2;
+  laser_point.point.z = 0.0;
+
+  try{
+    geometry_msgs::PointStamped base_point;
+    listener.transformPoint("base_link", laser_point, base_point);
+
+    ROS_INFO("base_laser: (%.2f, %.2f. %.2f) -----> base_link: (%.2f, %.2f, %.2f) at time %.2f",
+        laser_point.point.x, laser_point.point.y, laser_point.point.z,
+        base_point.point.x, base_point.point.y, base_point.point.z, base_point.header.stamp.toSec());
+  }
+  catch(tf::TransformException& ex){
+    ROS_ERROR("Received an exception trying to transform a point from \"base_laser\" to \"base_link\": %s", ex.what());
+  }
+}
+
+int main(int argc, char** argv){
+  ros::init(argc, argv, "robot_tf_listener");
+  ros::NodeHandle n;
+
+  tf::TransformListener listener(ros::Duration(10));
+
+  //we'll transform a point once every second
+  ros::Timer timer = n.createTimer(ros::Duration(1.0), boost::bind(&transformPoint, boost::ref(listener)));
+
+  ros::spin();
+
+}
+```
+
+We need to create a `tf:TransformListener` object. It automatically subscribes to the transform message topic over ROS and manager all transform data coming in over the wire. 
+
+We create a custom function `transformPoint(const tf::TransformListener & listener)`, that takes a point in laser_link frame and transforms it to base_link frame. This function will serve as callback for ros::Timer created in main() of our program. 
+
+
+Suppose we have a point in the laser_link frame like `geometry_msgs::PointStamped laser_point`. We want to transform it to `base_point` which is of the same type. To perform this transform, we'll call the `transformPoint` method of the `tf::TransformListener` object. This method takes 3 arguments. 
+
+1. target frame name: base_link in our case
+2. TransformPoint object to be transformed: the point we are transforming
+3. TransformPoint object to hold the result: 
+
+#### Building the code
+Now we modify the CMakeLists.txt file and add the following lines
+```
+add_executable(tf_broadcaster src/tf_broadcaster.cpp)
+add_executable(tf_listener src/tf_listener.cpp)
+target_link_libraries(tf_broadcaster ${catkin_LIBRARIES})
+target_link_libraries(tf_listener ${catkin_LIBRARIES})
+```
+
+
+
 
 ## References
 - [Client/Service examples](https://github.com/fairlight1337/ros_service_examples/)
