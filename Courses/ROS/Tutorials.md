@@ -1238,6 +1238,146 @@ catkin_metapackage()
 ```
 5. Additional tags: Additional tags inlcude the <url> and <author> tags. These are self-explanatory. 
 
+## TF Tutorials
+We assume that you know the basics of TF. Here we learn how to use TF2 package in ROS. Then we will setup TF for our custom robot.
+
+### Static Broadcaster
+First we create a custom package
+```
+> mkdir -p ~/tutorial_ws/src
+> cd ~/tutorial_ws/src
+> catkin_create_pkg learning_tf2 tf2 tf2_ros roscpp turtlesim
+```
+Then we write a static broadcaster node by creating a cpp file
+```
+> cd learning_tf2/src
+> touch static_turtle_tf2_broadcaster.cpp
+```
+
+The file looks like so
+```
+#include <ros/ros.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <cstdio>
+#include <tf2/LinearMath/Quaternion.h>
+
+
+std::string static_turtle_name;
+
+int main(int argc, char **argv)
+{
+  ros::init(argc,argv, "my_static_tf2_broadcaster");
+  if(argc != 8)
+  {
+    ROS_ERROR("Invalid number of parameters\nusage: static_turtle_tf2_broadcaster child_frame_name x y z roll pitch yaw");
+    return -1;
+  }
+  if(strcmp(argv[1],"world")==0)
+  {
+    ROS_ERROR("Your static turtle name cannot be 'world'");
+    return -1;
+
+  }
+  static_turtle_name = argv[1];
+  static tf2_ros::StaticTransformBroadcaster static_broadcaster;
+  geometry_msgs::TransformStamped static_transformStamped;
+
+  static_transformStamped.header.stamp = ros::Time::now();
+  static_transformStamped.header.frame_id = "world";
+  static_transformStamped.child_frame_id = static_turtle_name;
+  static_transformStamped.transform.translation.x = atof(argv[2]);
+  static_transformStamped.transform.translation.y = atof(argv[3]);
+  static_transformStamped.transform.translation.z = atof(argv[4]);
+  tf2::Quaternion quat;
+  quat.setRPY(atof(argv[5]), atof(argv[6]), atof(argv[7]));
+  static_transformStamped.transform.rotation.x = quat.x();
+  static_transformStamped.transform.rotation.y = quat.y();
+  static_transformStamped.transform.rotation.z = quat.z();
+  static_transformStamped.transform.rotation.w = quat.w();
+  static_broadcaster.sendTransform(static_transformStamped);
+  ROS_INFO("Spinning until killed publishing %s to world", static_turtle_name.c_str());
+  ros::spin();
+  return 0;
+};
+```
+Lets understand the code. First we create a broadcaster object of type `StaticTransformBroadcaster`. This will be used to broadcast transforms over ROS. Then we create the transform packet, which is of type `geometry_msgs::TransformStamped`. 
+
+
+Instead of writing a custom broadcaster, we privilige the use of tf2_ros api for broadcasting messages. tf2_ros::static_broadcast_publisher can be used as a node to publish transforms. Normally, we invoke these nodes from roslaunch files. 
+
+### Broadcaster
+```
+> cd ~/tutorial_ws/src/learning_tf2/src
+> touch turtle_tf2_broadcaster.cpp
+```
+The file looks like so
+```
+#include <ros/ros.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <turtlesim/Pose.h>
+
+std::string turtle_name;
+
+void poseCallback(const turtlesim::PoseConstPtr& msg){
+  static tf2_ros::TransformBroadcaster br;
+  geometry_msgs::TransformStamped transformStamped;
+  
+  transformStamped.header.stamp = ros::Time::now();
+  transformStamped.header.frame_id = "world";
+  transformStamped.child_frame_id = turtle_name;
+  transformStamped.transform.translation.x = msg->x;
+  transformStamped.transform.translation.y = msg->y;
+  transformStamped.transform.translation.z = 0.0;
+  tf2::Quaternion q;
+  q.setRPY(0, 0, msg->theta);
+  transformStamped.transform.rotation.x = q.x();
+  transformStamped.transform.rotation.y = q.y();
+  transformStamped.transform.rotation.z = q.z();
+  transformStamped.transform.rotation.w = q.w();
+
+  br.sendTransform(transformStamped);
+}
+
+int main(int argc, char** argv){
+  ros::init(argc, argv, "my_tf2_broadcaster");
+
+  ros::NodeHandle private_node("~");
+  if (! private_node.hasParam("turtle"))
+  {
+    if (argc != 2){ROS_ERROR("need turtle name as argument"); return -1;};
+    turtle_name = argv[1];
+  }
+  else
+  {
+    private_node.getParam("turtle", turtle_name);
+  }
+    
+  ros::NodeHandle node;
+  ros::Subscriber sub = node.subscribe(turtle_name+"/pose", 10, &poseCallback);
+
+  ros::spin();
+  return 0;
+};
+```
+Here, we create a node representing the parent frame, which has a callback function. The callback function is passed the sensor message that tells it the relative pose of the child frame with respect to it. Itthen calculate the transform and populates the TransformStamped object. This is then broadcast.    
+
+### Listener
+The basic code for a listener is as follows
+```
+tf2_ros::Buffer tfBuffer;
+tf2_ros::TransformListener tfListener(tfBuffer);
+```
+Once the listener is instantiated, it starts receiving tf2 transformations over the wire and buffers them for upto 10 seconds. The TransformListener object should be scoped to persist. If it does not persist, then its cache will be unable to fill and almost every query will fail. 
+
+To obtain transform between two frames "turtle1" and "turtle2", we invoke the following
+geometry_msgs::TransformStamped transform_stamped = tfBuffer.lookupTransform("turtle2", "turtle2", ros::Time(0));
+
+### Adding a Frame
+tf2 allows you to define a local frame for each sensor, link in your system. For every frame we need to add to the system, we need to create a node. In the code for that node, we instantiate a broadcaster and TransformStamped object. We assign our new frame as child_frame_id and one of the existing frames as parent frame. 
+
 ## Navigation Stack
 The job of thenavigation stack is to take information from odometry and sensor streams and output velocity commands to a mobile base. A navigation stack requires that the robot should be publishing sensor messages of the correct type and have a tf transform tree in place. The navigation stack also needs to be configured for the shape and dynamics of the specific robot to perform at a high level. 
 
