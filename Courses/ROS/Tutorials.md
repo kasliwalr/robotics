@@ -2128,8 +2128,86 @@ add_executable(tf_listener src/tf_listener.cpp)
 target_link_libraries(tf_broadcaster ${catkin_LIBRARIES})
 target_link_libraries(tf_listener ${catkin_LIBRARIES})
 ```
+### Sensor Information
+Navigation stack uses information from sensors to avoid obstacles in the world. It assumes that sensors are publishing sensor_msgs/Laserscan. The data structure is printed below
+```
+# Single scan from a planar laser range-finder
+#
+# If you have another ranging device with different behavior (e.g. a sonar
+# array), please find or create a different message, since applications
+# will make fairly laser-specific assumptions about this data
+
+Header header            # timestamp in the header is the acquisition time of 
+                         # the first ray in the scan.
+                         #
+                         # in frame frame_id, angles are measured around 
+                         # the positive Z axis (counterclockwise, if Z is up)
+                         # with zero angle being forward along the x axis
+                         
+float32 angle_min        # start angle of the scan [rad]
+float32 angle_max        # end angle of the scan [rad]
+float32 angle_increment  # angular distance between measurements [rad]
+
+float32 time_increment   # time between measurements [seconds] - if your scanner
+                         # is moving, this will be used in interpolating position
+                         # of 3d points
+float32 scan_time        # time between scans [seconds]
+
+float32 range_min        # minimum range value [m]
+float32 range_max        # maximum range value [m]
+
+float32[] ranges         # range data [m] (Note: values < range_min or > range_max should be discarded)
+float32[] intensities    # intensity data [device-specific units].  If your
+                         # device does not provide intensities, please leave
+                         # the array empty.
+```
+There is a tutorial on write a node for publishing sensor data over sensor_msgs/Laserscan [here](http://wiki.ros.org/navigation/Tutorials/RobotSetup/Sensors). Most commercial LIDARs provide ros packages which contains nodes for publishing over sensor_msgs/Laserscan. 
 
 
+### Odometry
+The navigation stack requires that odometry information be published using tf and nav_msgs/Odometry message. 
+
+We will understand how to publish the nav_msgs/Odometry information over ROS and the transform from 'odom` frame to `base_link` frame over tf2. 
+
+The navigation stack uses tf to determine the location of the robot in the world. However, tf does not provide velocity information. Therefore navigation stack requires that any odometry source publish both transform and Odometry messages over ROS. We will look at example code that accomplishes this task. 
+
+
+Odometry message stores an estimate of the position and velocity of a robot in the odometric frame along with covariance for the certainity of the pose estimate. The twist in the message corresponds to robot's velocity in child frame, normally the coordinate frame of the mobile base and the covariance of the velocity estimate. 
+```
+Header header
+string child_frame_id
+geometry_msgs/PoseWithCovariance pose
+geometry_msgs/TwistWithCovariance twist
+```
+
+### Base Controller
+Navigation stack assumes that it can send `geometry_msgs/Twist` messages assumed to be in the base coordinate frame of the robot on the `cmd_vel` topic. This means there must be a node subscribing to the `cmd_vel` topic that is capable of taking the Twist message (vx, vy and vtheta)     and converting them into motor commands to send to a mobile base. 
+
+### Mapping
+see [here](http://wiki.ros.org/slam_gmapping/Tutorials/MappingFromLoggedData#record)
+Here we will learn how to create a 2D map for navigation purposes from logger transform and laser scan data. 
+
+1. First create a bag file for scan data - it can be one geenrated from the robot or download an existing one
+
+2. Bring up the master
+```
+roscore
+```
+3. Set the parameter `use_sim_time` to true before starting any nodes
+4. start `slam_gmapping` node and which will injest the laser scan data and create a map. 
+```
+> rosrun gmapping slam_gmapping scan:=base_scan
+```
+Note that we had previously genrated a bag file with Odometry published over topic /base_scan.
+5. In a new terminal start playing back the bag file to feed data to slam_gmapping. 
+```
+> rosbag play --clock <name of the bag that you downloaded / created in step 2>
+```
+6. Save map to disk
+```
+> rosrun map_server map_saver -f <map_name>
+```
+You now have a map saved locally as **map.pgm**. 
 
 
 ## References
