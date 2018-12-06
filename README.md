@@ -13,7 +13,7 @@ This repository serves as a hub for robotics theory notes and starter projects. 
 Please click on the link above to be directed to appropriate content
 
 ## Contributing
-You will find the details in relevant READMEs for the above projects. 
+Courses are not open for contribution. You will find contribution guidelines for projects in relevant READMEs in the links above. 
 
 ## Author 
 Rishabh Kasliwal
