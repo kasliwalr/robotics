@@ -80,6 +80,8 @@
 - [ROS on Different Machines](http://wiki.ros.org/ROS/Tutorials/MultipleMachines)
 - [PCL](http://wiki.ros.org/pcl/Tutorials)
 - [rosserial](http://wiki.ros.org/rosserial?distro=melodic)
+- [Testing](http://wiki.ros.org/Quality/Tutorials/UnitTesting)
+- [Documentation](http://wiki.ros.org/rosdoc_lite)
 
 
 ## Installation
@@ -1610,4 +1612,7 @@ You now have a map saved locally as **map.pgm**.
 
 ## References
 - [Client/Service examples](https://github.com/fairlight1337/ros_service_examples/)
+- [Rostest](https://discourse.ros.org/t/ros-testing-continuous-integration-ci-and-deployment/1266)
+- [ROS Unit Testing](http://wiki.ros.org/Quality/Tutorials/UnitTesting)
+- [Rosdocs](http://wiki.ros.org/rosdoc_lite)
 - 
