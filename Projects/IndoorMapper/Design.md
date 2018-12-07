@@ -1,75 +1,34 @@
-## System Modules
-
-### LIDAR Module
-
-### IMU Module
-
-### Servo Module
+## System Module Specification
+Based on the sensor requirements of ROS navigation stack, the system is required to have following sensors. Lidar sensor for range estimation, intertial measurement unit for position estimation over short time periods and encoders (embedded in the servos) for odometry. 
+I have divided the overall system based on the lower level hardware. It is also in line with ROS Navigations stack architecture which assumes that it is receving laserscan, odometry information on ROS topics. This architecture choice gives higher degree of flexibility in choice of sensors, gives us better maintainbility as subsystem specific changes will be limited to that subsystem alone and potentially some reusability of these sensor subsystems in other ROS compatible robots. Each subsystem forms a cohesive module, in that it performs a very specific task and is not coupled to other subsystems. 
 
 ### Intelligence Module
+This is the brain of the robot. This module is responsible for receiving, processing and storing data related to mapping and navigation. This is the software that makes sense of the data coming in, to allow the robot to make a reasonable map. It is also responsible for reporting errors, and generate logs. I may separate that activity in another modules but for now lets keep it here. 
 
+### LIDAR Subsystem
+This module is responsible for controlling the LIDAR. It will include such operation such as initialization, starting and stopping the LIDAR, throwing exceptions in case of errors and formatting data for consumption by intelligence module. It may also buffer data if a connection is not available. 
 
+### IMU Module
+This module is responsible for controlling the 9-axis IMU 9250. It actions will include IMU initialization, starting and stopping acquisition, recovering from errors, formatting the read data for consumption by intelligence module. 
 
+### Servo Module
+This module is responsible for controlling the Servo. Its actions will include initialization of servo. It will offer different modes of operation such as velocity control, position control, torque control. It will handle servo errors. It is responsible for converting message from intelligence module for consumption by servo, as well as formatting data from servo for consumption by intelligence module. 
 
+### Power Module
+The goal of the power module is to supply appropriate voltage and sufficient current for normal operation of the system. The power system should ensure that not only average but peak current needs are met. The power system should also provide power for a suitable amount of time for robot to operate nominally. The power system should also ensure protection of Lipo battery from over-discharge to prevent premature replacement of batteries. It should ideally monitor power consumption of the system for metering purposes. 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## BOM
-
-|Part Name|Qty|Unit Price ($)|Total Price ($)|
-|---------|---|----------|-----------|
-|Waffle Board|6|10.00|40.00|
-|[Dynamixel XL430-W250-T](http://www.robotis.us/x-series/?price_min=0&price_max=82&sort=featured)|2|49.50|99.00|
-|[RPLIDAR-A1](https://www.seeedstudio.com/RPLiDAR-A1M8-360-Degree-Laser-Scanner-Kit-12M-Range-p-3072.html)|1|99.00|99.00|
-|LiPo|1|50.00|50.00|
-|Caster|1|5.00|1|
-|PlateSupport M3x35mm|4|||
-|PlateSupport M3x45mm|4|||
-|Tyre|2|||
-|Sprocket|2||
-
-
-## Power Budget
+#### Power Budget
 
 |Component|Qty|Avg Idle I (mA)|Avg Max I (mA)|Peak I (mA)|Voltage (V)|V<sub>ripple</sub>(V/ %)|Total Avg Max I (mA)|
 |---------|---|---------------|----------------------|-----------|-----------|------------------------|------------|
 |[R-Pi3](https://www.pidramble.com/wiki/benchmarks/power-consumption)|1  |260            |730                   |?          | 5.1       |+/- 0.3V                     | 730|
 |[R-Pi3 + CAM](https://raspi.tv/2016/how-much-power-does-raspberry-pi3b-use-how-fast-is-it-compared-to-pi2b)|1|260            |850                   |?          |5.1          |+/-0.3V                      |850|
-|TIVA Launchpad|1|NA          |45<sup>a</sup>        |           |5V         |+/0.25V                 |45|
-|[Dynamixel XL430-W250-T](http://support.robotis.com/en/)|2     |52                    |?          |11.1       |?                       |?|>100 ?|
+|[Dynamixel XL430-W250-T](http://support.robotis.com/en/)|2     |52                    |          |?       |11.1                       |?|>100 ?|
 |[LiDAR](http://bucket.download.slamtec.com/8e7a1f4490a235717b43fccaf7dcae325dda7dc8/LD108_SLAMTEC_rplidar_datasheet_A1M8_v2.1_en.pdf)    |1   |250           |500                   |700        |5          |0.02                    |500|
-|IR Sensor|5   |?             |40                    |           |5          |+/-0.5                  |200|
-|Nvidia TX1|1  |?             |?                     |?          |12V        |?                       |?| 
 
 [RPi Official](https://www.raspberrypi.org/documentation/faqs/#pi-power) </br>
-a: current consumption chart in [TM4C123GH6PM datasheet](http://www.ti.com/lit/ds/symlink/tm4c123gh6pm.pdf), @80MHZ, all peripherals enabled. Current consumption by specific attached peripherals, or in action is not included. 
 
-
-## Hardware Schematic
-
-
-
-Circuit Diagram image needed
-Picture of the actual connection
-
-
-
-
-### Power Distribution 
+#### Power Distribution 
 The goal of the power distribution system to to supply all components of the system power at specified voltages and current. I will provide a brief description of the power distribution in Turtlebot3 Burger modified version that I am making. Specifically, I will list the components and elaborate a bit on the reasons for choosing the components. 
 
 Component choice was mostly driven by budget, the original Robotis platform was > $500.00, this was unnecessarily expensive for me. I already had a few parts and found a few other unnecessary for my initial prototype. So here goes.
@@ -82,6 +41,34 @@ The battery will supply power to three area connected in star-topology.
 - second will be 12V-5V DC convertor supplying power to RPi, and Lidar motor. It will be placed on the second floor close to its respective sinks
 - third will be 12V-5V SC convertor (low ripple), supplying power to LiDAR scanner, it will be placed on the 3rd floow, close to its respective sink
 
+## Hardware Specification
+
+![hw schematic](images/hw_schematic.jpg)
+
+## Software Specification
+![call_graph](images/call_graph.jpg)
+
+## BOM 
+|Part Name|Part Number|Vendor| Vendor Part Number|Qty|Unit Price ($)|Total Price ($)|
+|---------|-----------|------|-------------------|---|--------------|---------------|
+|Raspberry Pi 3B|IM00001|[CanaKit](https://www.canakit.com/raspberry-pi-3-model-b.html?cid=usd&src=raspberrypi)|SKU: PI3|1|35.00|35.00|
+|Lipo SHIM|IM00002|[Pimoroni](https://shop.pimoroni.com/products/lipo-shim)|PIM185|1|9.95|9.95|
+|Switch, PushButton|IM00003|[Polulu](https://www.pololu.com/product/2808)|2808|1|3.95|3.95|
+|Battery, Li-Poly|IM00004|[HobbyKing](https://hobbyking.com/en_us/turnigy-nano-tech-2500mah-3s1p-5-10c-transmitter-lipo-pack-futaba-6ex-and-3pks.html)|SKU 9210000037|1|17.98|17.98|
+|Battery Protection PCB|IM00005|[Diymore](https://www.diymore.cc/products/3s-12v-10a-18650-bms-charger-module-li-ion-lithium-battery-protection-board)|SKU 012245|1|1.99|1.99|
+|USB to Serial, FT232RL|IM00006|[Sparkfun](https://www.sparkfun.com/products/12731)|BOB-12731|1|15.95|15.95|
+|Inverter, Hex, SN74HC04|IM00007|[Digikey](https://www.digikey.com/product-detail/en/texas-instruments/SN74HC04N/296-1566-5-ND/277212)|296-1566-5-ND|1|0.55|0.55|
+|Buffer Gate, 3-STATE, SN74HCT125|IM00008|[Digikey](https://www.digikey.com/product-detail/en/texas-instruments/SN74HCT125N/296-8386-5-ND/376860)|296-8386-5-ND|1|0.40|0.40|
+|Connector Header, 3 pin, B3B-EH-A|IM00009|[Digikey](https://www.digikey.com/product-detail/en/jst-sales-america-inc/B3B-EH-A-LF-SN/455-1612-ND/926521)|455-1612-ND|1|0.19|0.19|
+|Servo Motor|IM00010|[Robotis](http://www.robotis.us/dynamixel-xl430-w250-t/)|XL430-W250T|2|49.90|99.8|
+|Intertial Measurement Unit 9250|IM00011|[Sparkfun](https://www.sparkfun.com/products/13762)|SEN-13762|1|14.95|14.95|
+|LIDAR|IM00012|[Seeed Studio](https://www.seeedstudio.com/RPLiDAR-A1M8-360-Degree-Laser-Scanner-Kit-12M-Range-p-3072.html)|SKU 110991065|1|99.00|99.00|
+|Regulator, 12V-5VDC, Step Down|IM00013|[Polulu](https://www.pololu.com/product/2851)|2851|1|14.95|14.95|
+
+### Part Naming Scheme
+IMxxyyy: IM - indoor mapper, xx - 2 digit code for part type (00-Electrical parts), yyy - 3 digit code indicating part number for a particular type
+
+
 ![wiring diagram](images/power_wiring.png)
 
 
@@ -89,10 +76,6 @@ The battery will supply power to three area connected in star-topology.
 
 
 UART to half-duplex: https://devtalk.nvidia.com/default/topic/1039093/half-duplex-uart-from-dev-ttyths2/
-
-
-
-
 
 
 ## Notes

@@ -8,19 +8,20 @@ My goal in doing this project is learn apply the theory, tools and techniques us
 
 
 ## Setup
-The setup requires both building hardware and software. Detailed setup instruction are provided [here](Setup.md). Hardware setup requires procuring parts as specified in [BOM]. These parts will then need to be assembled and tested and some body measurements need to be performed for customizing the navigation. Two computing platform - PC and Raspberry Pi 3B (>= 16GB SD card) will be used and it is assumed that the PC runs Ubuntu 16.04 LTS and Raspberry Pi runs [Raspbian Stretch](https://www.raspberrypi.org/downloads/raspbian/). We will not cover Ubuntu installation instruction, they are covered elsewhere. 
+The setup requires both building hardware and software. Detailed setup instruction are provided [here](Setup.md). Hardware setup requires procuring parts as specified in [BOM](https://github.com/kasliwalr/Robotics/blob/master/Projects/IndoorMapper/Design.md#bom). These parts will then need to be assembled and tested and some body measurements need to be performed for customizing the navigation. Two computing platform - PC and Raspberry Pi 3B (>= 16GB SD card) will be used and it is assumed that the PC runs Ubuntu 16.04 LTS and Raspberry Pi runs [Raspbian Stretch](https://www.raspberrypi.org/downloads/raspbian/). We will not cover Ubuntu installation instruction, they are covered elsewhere. 
 
 ## Usage
 TBD. 
+<!--
 - add gif showing demo 
-
+-->
 
 ## Contributing
 For those interested in forking for modification or enhancing the project, below is a list of documents useful for understanding the project in detail
-- [IndoorMapper Report - TBD](Report.md)
-- [Project Requirements v0.0](Requirements.md)
-- [Design Document - TBD](Design.md)
-- [Test Document - TBD](Tests.md)
+- IndoorMapper Report - TBD
+- [Project Requirements v0.0 - In Progress](Requirements.md)
+- [Design Document - In Progress](Design.md)
+- Test Document - TBD
 
 ## Licensing
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

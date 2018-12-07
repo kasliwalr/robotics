@@ -45,7 +45,10 @@ I am doing this project to learn and apply tools and techniques used for autonom
 Besides the mapping specific applications, I hope to explore use of single board computers, microcontrollers, GPUs and software stacks associated with those. 
 
 ### Engineering Process
-I am taking a fast prototyping approach by using existing hobby kits. Specifically, I will use the [Turtlebot3 Burger](http://emanual.robotis.com/docs/en/platform/turtlebot3/overview/) platform from [Robotis Inc.](http://robotis.us/). I will however, not use the out of the box version, instead will only use some Robotis hardware (frame, wheels, dynamixel servos etc.) along with custom made parts (primarily to reduce costs). I will choose the robot computers and set the software configuration for accomplishing the navigation and mapping task. Software development will be done using C++, Python and ROS framework. 
+I am taking a fast prototyping approach by using existing hobby kits. Specifically, I will use the [Turtlebot3 Burger](http://emanual.robotis.com/docs/en/platform/turtlebot3/overview/) platform from [Robotis Inc.](http://robotis.us/). I will however, not use the out of the box version, instead will only use some Robotis hardware (frame, wheels, dynamixel servos etc.) along with custom made parts (primarily to reduce costs). I will choose the robot computers and set the software configuration for accomplishing the navigation and mapping task. Software development will be done using C++, Python and ROS framework.
+
+As recommended on [ROS website](http://wiki.ros.org/Quality/Tutorials/UnitTesting) Python's unittest framework will be used for testing at ROS Python API level, gtest will be used for testing at ROS C++ API level and rostest will be used for testing at ROS node level, involving ROS as communication middleware. 
+
 
 I will also explore the distributed paradigm for our robot. The intelligence for the robot will be onboard a PC, while drivers will be onboard the robot computer. The PC will use a Linux based system. 
 
