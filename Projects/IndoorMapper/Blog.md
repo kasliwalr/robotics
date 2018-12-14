@@ -33,10 +33,18 @@ The costmap_2d package receives sensor information from sensor streams, but need
   - global_planner publishes message of type `nav_msgs/Path` which is basically an array of poses. this can be used for display purposes. 
 - base_local_planner
   - This package provides implementations of the [Trajectory Rollout](https://pdfs.semanticscholar.org/dabd/bb636f02d3cff3d546bd1bdae96a058ba4bc.pdf?_ga=2.75374935.412017123.1520536154-80785446.1520536154) and [Dynamic Window](https://www.ri.cmu.edu/pub_files/pub1/fox_dieter_1997_1/fox_dieter_1997_1.pdf) approaches to local robot navigation on a plane. 
+  - it publishes both global and local plan for visualization purposes. it subscribes to `nav_msgs/Odometry`
+  
 
 The need for local planner is to avoid obstacles that often come up but are not on the map. This is a realistic situation. For example an robot nvigating indoors will encounter a walking person, a child, some toys lying on the ground and such. 
   
-
+Now two more packages need to be understood, before we move on
+- amcl: to navigate a robot needs to localize itself. the global planner is give a map and a goal, and it generates an optimal path. The local planner somehow manages to map a portion of a global map onto its position and then generates optimal trajectories in that local map. But how does it know which portion of the global map is relevant to it, in other words it has to know where is it on the global map - it has to localize itself. This is done for it by amcl. 
+  - amcl implements [Monte Carlo Localization](http://robots.stanford.edu/papers/fox.aaai99.pdf) approach
+  - several other modesl are employed from Probabilistic Robotics book - sample_motion_model_odometry, beam_range_finder_model, likelihood_field_range_finder_model, Augmented_MCL, and KLD_Sampling_MCL.
+  - amcl takes in a laser-based map, laser scans, and transform messages, and outputs pose estimates. 
+- mapping: This package contains a ROS wrapper for OpenSlam's Gmapping. The gmapping package provides laser-based SLAM (Simultaneous Localization and Mapping), as a ROS node called slam_gmapping
+  - 
 
 Secondly, we also need to figure out what information is available to use for velocity and position from the IMU and encoders and in what frame?
 
