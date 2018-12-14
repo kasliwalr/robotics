@@ -44,7 +44,9 @@ Now two more packages need to be understood, before we move on
   - several other modesl are employed from Probabilistic Robotics book - sample_motion_model_odometry, beam_range_finder_model, likelihood_field_range_finder_model, Augmented_MCL, and KLD_Sampling_MCL.
   - amcl takes in a laser-based map, laser scans, and transform messages, and outputs pose estimates. 
 - mapping: This package contains a ROS wrapper for OpenSlam's Gmapping. The gmapping package provides laser-based SLAM (Simultaneous Localization and Mapping), as a ROS node called slam_gmapping
-  - 
+  - it generates an occupancy grid based map using laser-scan data that it subscribes to. 
+  - [main ref paper](http://ais.informatik.uni-freiburg.de/publications/papers/grisetti07tro.pdf)
+  
 
 Secondly, we also need to figure out what information is available to use for velocity and position from the IMU and encoders and in what frame?
 
