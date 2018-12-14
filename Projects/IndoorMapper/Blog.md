@@ -27,6 +27,11 @@ Lets also explore other players.
 The costmap_2d package receives sensor information from sensor streams, but needs tf transform information to make sense of it 
 - global_planner: its API allows the caller to do 3 things
   - initialize the planner with costmap
+  
+  
+  So basically a lot of information is being transferred from one place to the other. Lets tablulate who is talking to whom
+  
+  
   - makePath(start, goal, plan), plan is passed as reference. start, goal and plan are of type `geometry_msgs/PoseStamped`. 
   - one can in principle use any algorithm for planning. The package provides some algorithms which includes graph search algorithms such a Dijkstra and A*. [Here is more on A*'s use in robotics](https://www.coursera.org/lecture/robotics-motion-planning/1-4-a-algorithm-Vv9fL)
   - one can specify the algorithms by setting use_dijkstra parameter. 
