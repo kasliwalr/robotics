@@ -29,7 +29,12 @@ The costmap_2d package receives sensor information from sensor streams, but need
   - initialize the planner with costmap
   - makePath(start, goal, plan), plan is passed as reference. start, goal and plan are of type `geometry_msgs/PoseStamped`. 
   - one can in principle use any algorithm for planning. The package provides some algorithms which includes graph search algorithms such a Dijkstra and A*. [Here is more on A*'s use in robotics](https://www.coursera.org/lecture/robotics-motion-planning/1-4-a-algorithm-Vv9fL)
-  
+  - one can specify the algorithms by setting use_dijkstra parameter. 
+  - global_planner publishes message of type `nav_msgs/Path` which is basically an array of poses. this can be used for display purposes. 
+- base_local_planner
+  - This package provides implementations of the [Trajectory Rollout](https://pdfs.semanticscholar.org/dabd/bb636f02d3cff3d546bd1bdae96a058ba4bc.pdf?_ga=2.75374935.412017123.1520536154-80785446.1520536154) and [Dynamic Window](https://www.ri.cmu.edu/pub_files/pub1/fox_dieter_1997_1/fox_dieter_1997_1.pdf) approaches to local robot navigation on a plane. 
+
+The need for local planner is to avoid obstacles that often come up but are not on the map. This is a realistic situation. For example an robot nvigating indoors will encounter a walking person, a child, some toys lying on the ground and such. 
   
 
 
