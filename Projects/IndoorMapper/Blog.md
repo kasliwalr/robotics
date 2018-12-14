@@ -14,3 +14,26 @@ geometry_msgs/TwistWithCovariance twist
 ```
 The pose corresponds to the robot's estimated pose in `odom` frame with optional covariance information. The twist corresponds to robot's velocity in child frame (normally framed associated with mobile base), this too with optional covariance informaiton. 
 The PoseWithCovariance type contains 6 elements for the 6 DOFs and 36 elements array for storing the covariance matrix. Same goes for TwistWithCovariance.  The calculation of pose's six DOFs is simple enough if you know the velocity along the different DOFs. Just note that apporpriate transformations are in order to be able to obtain pose in `odom` frame based on velocities in `mobile base` frame. 
+
+
+Ok, but we need to dig a little deeper. How does navigation stack use this information? Are there any requirements on the quality of information? 
+For now we'll assume that all sensors are working properly (we'll get to verifying the assumption later). How does the navigation stack use this information. It uses it two ways - for map building and for navigation. Map building precedes navigation in our case and both requires the use of the sensor array. 
+
+Two packages are often employed for this purpose - gmapping for map building and AMCL for navigation. 
+Lets also explore other players. 
+- costmap_2d package: provides costmaps for use by navigation algorithms. It publishes two topics of message types 
+  - `nav_msgs/OccupancyGrid`: This represents a 2-D grid map, in which each cell represents the probability of occupancy. 
+  - `map_msgs/OccupancyGridUpdate: 
+The costmap_2d package receives sensor information from sensor streams, but needs tf transform information to make sense of it 
+- global_planner: its API allows the caller to do 3 things
+  - initialize the planner with costmap
+  - makePath(start, goal, plan), plan is passed as reference. start, goal and plan are of type `geometry_msgs/PoseStamped`. 
+  - one can in principle use any algorithm for planning. The package provides some algorithms which includes graph search algorithms such a Dijkstra and A*. [Here is more on A*'s use in robotics](https://www.coursera.org/lecture/robotics-motion-planning/1-4-a-algorithm-Vv9fL)
+  
+  
+
+
+Secondly, we also need to figure out what information is available to use for velocity and position from the IMU and encoders and in what frame?
+
+
+The [navigation tuning guide](http://wiki.ros.org/navigation/Tutorials/Navigation%20Tuning%20Guide) might give us some clues. 
