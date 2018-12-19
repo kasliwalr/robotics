@@ -107,3 +107,35 @@ geometry_msgs/TwistWithCovariance twist
       float64 z
   float64[36] covariance
 ```
+
+
+## Dec 18th, 2018
+
+I was busy doing some other stuff. So carrying on from before, here is a list of things that need to be done to finish the IMU module. But first let me remind myself, what the structure of IMU module is going to be. 
+
+IMU module will consists of a ROS node. We could provide certain parameters to it such as which module of IMU to run. The ROS node will then start transmitting messages onto the Odometry frame. The IMU node will call on the C++ IMU library that we'll implement and test. 
+
+At the C++ IMU library level:
+
+1. I tested that self test is working when running IMU from Arduino. But I faulted in my own calculations in following the designated protocol. So I'll try and replicate the code on raspberry Pi and rerun the test.
+
+2. Write C++ IMU API. The user for this API will be the ROS node. We would need to finalize the ROS API first then, so that we are clear about the IMU API. 
+
+3. The C++ IMU API should be an class, with the public methods as the API. The private methods will call on Pigpio lib to do the dirty work i.e. discovering and communicating with the IMU
+
+4. Since we want to run multiple IMUs, we expect ROS API to receive IMU model from the command line/launch file as constructor argument. The class implementation will be such that based on the model, it will instantiate appropriate object type. We will implement IMU classes that implement an C++ IMU interface. However each individual class will talk to a specific IMU module type in a custom manner. 
+
+5. Don't expect multiple IMUs running on the same platform. 
+
+
+Here is a bucket list of items
+
+- port self test to RPi
+- finalize ROS node API
+- finalize IMU C++ API
+- write IMU C++ API unit tests & mocks
+- implement API. test and repeat
+- write IMU ROS unit tests 
+- perform ROS node integration testing
+- documentation
+
