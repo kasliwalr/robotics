@@ -139,3 +139,34 @@ Here is a bucket list of items
 - perform ROS node integration testing
 - documentation
 
+
+## Dec 19th, 2018
+
+Ok, so I finished the first part of self test. Here is what I did
+
+1. I ran the self test on Arduino setup - Arduino Uno connected to PC via virtual serial port, IMU9250 connected to arduino. Then I ran the sparkfun sketch_dec05a. This resulted in initiation of reading from the sensor. The code first performs a self test, the self test generates %age deviation from factory setting. The settings reported by this system is < +/-5% from the factory setting. 
+```
+x-axis self test: acceleration trim within : -0.0% of factory value
+y-axis self test: acceleration trim within : -2.9% of factory value
+z-axis self test: acceleration trim within : -1.6% of factory value
+x-axis self test: gyration trim within : -0.9% of factory value
+y-axis self test: gyration trim within : -0.3% of factory value
+z-axis self test: gyration trim within : -0.5% of factory value
+```
+
+
+2. On inspection of the IMU9250 SelfTest class method, I found a few changes worth making. I made the change to my test_imu c++ code. And reran the test. 
+```
+gpio initialized
+I2C status 0
+224
+gyrx: -0.181269%
+gyry: -0.991401%
+gyrz: -0.318571%
+accx: -0.152679%
+accy: 2.34237%
+accz: -1.67486%
+```
+
+These both look comparable. 
+
