@@ -1,0 +1,20 @@
+//invocation
+
+rosrun imu imu_node node_name sensor_model odom_pub_freq
+
+
+//Publish
+message type: nav_msgs::Odometry
+topic: odom_imu
+
+
+
+
+ 
+
+ 
+ 
+
+
+
+*
