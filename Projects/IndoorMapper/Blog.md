@@ -170,3 +170,8 @@ accz: -1.67486%
 
 These both look comparable. 
 
+## Dec 23th, 2018
+After some delay I come back here. I had been reorganizing my repositories and doing some planning on subject areas that I need to work on. I did get some work done on the IMU node design. I specified the IMU ROS node's API and the IMU driver library API. I then worked on the design of the IMU driver and IMU ROS node. Both of these are specified in the design document [here](design/Design.md/#imu-module)
+
+
+
