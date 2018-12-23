@@ -173,5 +173,21 @@ These both look comparable.
 ## Dec 23th, 2018
 After some delay I come back here. I had been reorganizing my repositories and doing some planning on subject areas that I need to work on. I did get some work done on the IMU node design. I specified the IMU ROS node's API and the IMU driver library API. I then worked on the design of the IMU driver and IMU ROS node. Both of these are specified in the design document [here](design/Design.md/#imu-module)
 
+The IMU ROS node will call the IMU driver API to talk to the IMU. The ROS node's job is to properly format the data from the IMU driver node and publish it to the *nav_msgs/Odometry* topic. 
+
+The IMU ROS node is simple. There is a main() inside which we run an infinite loop which publishes odometry data. There may be some helper functions to perform IMU driver output translation to *Odometry*. 
+
+The IMU driver design is little more involved. The requirement from the design is as follows
+- driver should allow transparent and consistent interface to read and control the IMU
+- driver should be able to handle different types of IMUs
+
+To accomplish this task we choose the following design
+- an abstract base class that defines the IMU interface
+- each imu class implements the abstract class interface by inherting from the base class. 
+- there is a imu factory that that return a specific imu class based on the *model_type* string passed to its *createIMU()* method
+
+
+
+
 
 
