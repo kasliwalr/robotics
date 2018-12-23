@@ -1,3 +1,13 @@
+
+[System Module Specification](#system-module-specification)
+- [Intelligence Module](#intelligence-module)
+- [LIDAR Module](#lidar-module)
+- [IMU Module](#imu-module)
+- [Servo Module](#servo-module)
+- [Power Module](#power-module)
+
+
+
 ## System Module Specification
 Based on the sensor requirements of ROS navigation stack, the system is required to have following sensors. Lidar sensor for range estimation, intertial measurement unit for position estimation over short time periods and encoders (embedded in the servos) for odometry. 
 I have divided the overall system based on the lower level hardware. It is also in line with ROS Navigations stack architecture which assumes that it is receving laserscan, odometry information on ROS topics. This architecture choice gives higher degree of flexibility in choice of sensors, gives us better maintainbility as subsystem specific changes will be limited to that subsystem alone and potentially some reusability of these sensor subsystems in other ROS compatible robots. Each subsystem forms a cohesive module, in that it performs a very specific task and is not coupled to other subsystems. 
