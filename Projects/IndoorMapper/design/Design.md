@@ -26,11 +26,11 @@ This module is responsible for controlling the 9-axis IMU 9250. It actions will 
 ```
 rosrun imu imu_node node_name sensor_model odom_pub_freq
 ```
-- invocation will allow setting the imu node name, imu model to read from and publishing frequency for the odometry message
+   - invocation will allow setting the imu node name, imu model to read from and publishing frequency for the odometry message
 
 2. publish odometry
-- message will be of type nav_msgs::Odometry
-- message will be published on topic of name `odom_imu`. 
+   - message will be of type nav_msgs::Odometry
+   - message will be published on topic of name `odom_imu`. 
 
 #### ROS Node Design
 1. dependencies
