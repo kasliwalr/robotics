@@ -11,6 +11,133 @@ This module is responsible for controlling the LIDAR. It will include such opera
 ### IMU Module
 This module is responsible for controlling the 9-axis IMU 9250. It actions will include IMU initialization, starting and stopping acquisition, recovering from errors, formatting the read data for consumption by intelligence module. 
 
+#### ROS Node API
+1. invocation
+```
+rosrun imu imu_node node_name sensor_model odom_pub_freq
+```
+- invocation will allow setting the imu node name, imu model to read from and publishing frequency for the odometry message
+
+2. publish odometry
+- message will be of type nav_msgs::Odometry
+- message will be published on topic of name `odom_imu`. 
+
+#### ROS Node Design
+1. dependencies
+- nav_msgs::Odometry
+- imu_driver.h
+- roscpp
+
+2. Helper methods
+- generate odometry message from acceleration (m/sec<sup>2</sup>) and gyroscope (radians/sec) measurements
+```
+void generate_odometry(const double & accMeas, const double & gyrMeas, nav_msgs::Odometry & odom)
+```
+
+3. Globals: none
+3a. Constants: 
+- FS_ACC
+- FS_GYR
+
+4. Inputs:
+- argv[1]: node name
+- argv[2]: imu model type, expected format imu_modeNum
+- argv[3]: publish frequency
+
+4a. 
+
+5. Flow
+- read command line inputs into argv
+- perform inputs type and number error check, if check fails, return 1 with ROS ERROR message, log ROS ERROR
+- init Node, with node name - argv[1]
+- instantiate node handle
+
+- instantiate Imu object with model type, argv[2]
+- advertise publisher of type `nav_msgs::Odometry` using node handle
+
+- instantiate nav_msgs::Odometry object, acceleration and gyro measurement arrays
+
+- while (no termination signal)
+  - read acceleration in accelration array
+  - read gyro measurements in gyro array
+  - generate odometry message using helper method
+  - publishe odometry message
+  - sleep for loop period
+
+- release imu resources
+
+6. Error Handling
+- all Imu APIs will be invoked inside a try catch block. They are expected to return error string on exception. 
+- In the catch block, we catch the std::exception, extract the error message, and print to stdout using ROS logging facility at ERROR level. We also log the message using ROS logging facility at ERROR level
+
+#### IMU Driver API
+
+1. namespace
+- all imu classes are part of imu_driver namespace
+
+
+2. instantiation
+- instantiates an imu object of specific model type
+```
+try{
+    imu_driver::Imu(string & imu_modelnum);
+}
+catch(){
+ //print and log error information using ROS logging
+}
+```
+- parameter values will be optional, default value is imu_9250
+- all public member methods of class Imu return void. They manage error information using exceptions
+
+3. initialize imu
+- initializes the imu - selftest followed by calibration 
+- optional parameters can be passed. will be decided at a later date
+```
+Imu.init(param1, param2.....);
+```
+
+4. read accelerometer
+- read x, y, z acceleration. units m/sec<sup>2</sup>
+```
+//imu is object of type Imu
+imu.readAcc(float *Acc);     //Acc is pointer to first element of a 3 element double array. Acc[0]: x-dir, Acc[1]: y-dir, Acc[2]: z-dir
+```
+
+5. read gyroscope
+- read x,y,z axis rotational velocity. units radians/sec
+```
+//imu is object of type Imu
+imu.readGyr(float *Gyr);    //Gyr is pointer to first element of a 3 element double array. Gyr[0]: x-rotation, Gyr[1]: y-rotation, Gyr[2]: z-rotation
+```
+
+6. shutdown
+- aborts connection to imu over i2c. imu is released for use by another process
+```
+imu.shutdown()
+```
+
+#### IMU Driver Design
+1. Design Pattern: We will use the [factory pattern](https://www.oodesign.com/factory-pattern.html). 
+- ratiale: we need to generate different product (i.e.) objects for each specific type of imu. This is so because the way these objects talk to their specific hardware is dependent on the imu's register api. On the other hand, the way we intend to use these imus in our application will be the same. 
+
+- there we intend to create an interface that the client (i.e. ROS node) will use. We then create a concrete class that implements the interface. There can be multiple such concrete classes, one for each type of imu hardware. 
+
+- we implement a imu_factory. Given an imu model name, it will instantiate an imu object from a set of allowable imu models using its concrete class, and pass the newly created object (casted as the abstract class i.e. the interface) to the client.
+
+
+2. File types and content:
+- there will be a imu_driver.h header file which will contain the method declarations, register address aliases. The header file will have define guards as per [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html#Header_Files)
+
+- imu_driver.h is included at the end as per [style guideles](https://google.github.io/styleguide/cppguide.html#Name_and_Order_of_Includes)
+
+- we have imu_driver.h that will include the abstract class definitions
+- we will have imu9250.h that will have concrete class defintion
+
+
+3. Namespaces
+- using [style guide](https://google.github.io/styleguide/cppguide.html#Namespaces)
+- we will wrap our abstract class (interface) and concrete class definitions inside namespaces
+
 ### Servo Module
 This module is responsible for controlling the Servo. Its actions will include initialization of servo. It will offer different modes of operation such as velocity control, position control, torque control. It will handle servo errors. It is responsible for converting message from intelligence module for consumption by servo, as well as formatting data from servo for consumption by intelligence module. 
 
