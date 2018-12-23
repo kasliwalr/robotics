@@ -184,7 +184,15 @@ The IMU driver design is little more involved. The requirement from the design i
 To accomplish this task we choose the following design
 - an abstract base class that defines the IMU interface
 - each imu class implements the abstract class interface by inherting from the base class. 
-- there is a imu factory that that return a specific imu class based on the *model_type* string passed to its *createIMU()* method
+- there is a imu factory that that return a specific imu class based on the *model_type* string passed to its `createIMU()` method
+
+Implementation:
+- we will define a single header file where we define the abstract base class and specific imu classes. Ideally we want to be able to specific imu class definitions to their respective headers. This minimizes recompilation.  We will define the all class methods in a separate .cpp file. 
+- to facilitate integration testing without depending on hardware, we add mock imu class. This mock class is returned when passed *model_type* string is not matched in `createIMU()`. 
+- we then take a TDD approach. We write tests to imu base class imu, and then tweak the specific imu driver implementation until all tests pass. 
+
+
+
 
 
 
