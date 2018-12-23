@@ -23,23 +23,23 @@ This module is responsible for controlling the 9-axis IMU 9250. It actions will 
 
 #### ROS Node API
 1. invocation
+   - invocation will allow setting the imu node name, imu model to read from and publishing frequency for the odometry message
 ```
 rosrun imu imu_node node_name sensor_model odom_pub_freq
 ```
-   - invocation will allow setting the imu node name, imu model to read from and publishing frequency for the odometry message
-
+   
 2. publish odometry
    - message will be of type nav_msgs::Odometry
    - message will be published on topic of name `odom_imu`. 
 
 #### ROS Node Design
 1. dependencies
-- nav_msgs::Odometry
-- imu_driver.h
-- roscpp
+   - nav_msgs::Odometry
+   - imu_driver.h
+   - roscpp
 
 2. Helper methods
-- generate odometry message from acceleration (m/sec<sup>2</sup>) and gyroscope (radians/sec) measurements
+   - generate odometry message from acceleration (m/sec<sup>2</sup>) and gyroscope (radians/sec) measurements
 ```
 void generate_odometry(const double & accMeas, const double & gyrMeas, nav_msgs::Odometry & odom)
 ```
