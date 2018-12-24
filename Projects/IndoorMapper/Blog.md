@@ -193,6 +193,20 @@ Implementation:
 
 
 
+## Dec 24th, 2018
+So I am writing this as I am implementing imu code. 
+
+1. imu driver class heirarchy: there is a abstract base `Imu` class that specifies the imu interface. There can be n derived classes. I have created `Imu9250` derived class that implements the `Imu` interface. 
+
+2. imu driver testing: Each individual method in imu driver api makes a sequence of calls to the methods in `pigpio` library. We assume that each pigpio library method functions correctly. This means that either it will appropriate value without error or in case of error return appropriate error code. Therefore, the job of api method is to call pigpio methods in correct sequence and pass appropriate values to the pigpio methods. 
+
+To test this we will create a pigpio object of type mock pigpio_wrapper. This object will have mock calls to pigpio. There will also be a pigpio object of type real pigpio_wrapper which will make actual calls to pigpio. The `Imu9250` is not aware of which pigpio wrapper it is using. This is set by the context. In the testing code, we set the `type` parameters in pigpio factory to mock, so that when `Imu9250` makes a call to factory to obtain pigpio wrapper object it gets a mock one. Now we test add call expectation in our test to verify opration of `Imu9250`. On the other hand, when ROS node is using the IMU, it will set the type parameter in pigpio factory to real. Now when `Imu9250` make call to factory to obtain pigpio wrapper object it gets a real one to use. 
+
+
+
+
+
+
 
 
 
