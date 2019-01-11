@@ -203,6 +203,19 @@ So I am writing this as I am implementing imu code.
 To test this we will create a pigpio object of type mock pigpio_wrapper. This object will have mock calls to pigpio. There will also be a pigpio object of type real pigpio_wrapper which will make actual calls to pigpio. The `Imu9250` is not aware of which pigpio wrapper it is using. This is set by the context. In the testing code, we set the `type` parameters in pigpio factory to mock, so that when `Imu9250` makes a call to factory to obtain pigpio wrapper object it gets a mock one. Now we test add call expectation in our test to verify opration of `Imu9250`. On the other hand, when ROS node is using the IMU, it will set the type parameter in pigpio factory to real. Now when `Imu9250` make call to factory to obtain pigpio wrapper object it gets a real one to use. 
 
 
+## Jan 10, 2019
+
+Once the tf is setup and all sensors etc are setup, the next step is mapping. We are jumping ahead here as we have not yet finished the said parts, but lets just explore gmapping a bit and understand the algorithms underlying it at a bird's eye level. 
+
+These are the [resources](https://openslam-org.github.io/gmapping.html) I am referring to in this discussion.
+
+Gmapping is a Rao-Blackwellized particle filter. It generates maps as grid maps using laser scan data, the one you obtain from 2D and 3D LIDARs. This approach uses particle filters,where each particle carries a map of the environment, to gepnerate a consistent and reliable map, the particles need to be reduced, the remaining particles being the most reliable ones.
+
+
+At this point we'll just say that Rao-Blackwellized particle filter is a way of sampling particles which is much more computationaly efficient. In a multiidimensional distribution is reduced possible states by marginalizing the distribution. They particle filter proposed in this [paper]() and used in gmapping have two novel innovations. 
+1. compute an accurate proposal distribution taking into account not only the movement of the robot but also the most recent observation. 
+2. an approach to selectively carry out re-sampling operations which seriously reduces the problem of particle depletion. 
+
 
 
 
