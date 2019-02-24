@@ -20,7 +20,7 @@ TBD.
 For those interested in forking for modification or enhancing the project, below is a list of documents useful for understanding the project in detail
 - IndoorMapper Report - TBD
 - [Project Requirements v0.0 - In Progress](Requirements.md)
-- [Design Document - In Progress](Design.md)
+- [Design Document - In Progress](design/Design.md)
 - Test Document - TBD
 
 ## Licensing
