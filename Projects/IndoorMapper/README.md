@@ -1,4 +1,4 @@
-# Indoor Mapper
+# Indoor Mapper - on backburner
 Indoor mapping and navigation is a fundamental problem in robotics. A robot capable of performing autonomous mapping and navigation can be roam independently inside an indoor environment and can be tasked to perform a variety of activities. Such a robot serves as a platform onto which a variety of robot applications can be built. Many of the same theory and techniques are applicable for outdoor navigaton which is a core technology for self driving cars. 
 
 My goal in doing this project is learn apply the theory, tools and techniques used in robotics development. The most impactful application would be navigation and mapping where I will make use of the Robotic Operating System (ROS), probabilisitic robotics theory, navigation and mapping algorithms and embedded computers. I also hope that this project will showcase not only the above but also software best practices such as unit testing, documentation and continous integration. 
