@@ -22,4 +22,4 @@ Rishabh Kasliwal
 The notes contained here are compiled from various sources (books, websites, blogs) as cited in relevant documents. In some cases I have copied sentences verbatim or only with little modification. Therefore I don't claim complete credit for this work and apologize for using other people's work without acknowledgement. I will endevour to rectify this error as and when time permits. 
 
 
-![test](https://www.youtube.com/embed/XvXK_vZ0BNw)
+![![picture of IndoorMapper with sensor labels](IndoorMapper/images/indoor_mapper.jpg)](https://www.youtube.com/embed/XvXK_vZ0BNw)
