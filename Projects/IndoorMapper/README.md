@@ -3,8 +3,7 @@ Indoor mapping and navigation is a fundamental problem in robotics. A robot capa
 
 My goal in doing this project is learn apply the theory, tools and techniques used in robotics development. The most impactful application would be navigation and mapping where I will make use of the Robotic Operating System (ROS), probabilisitic robotics theory, navigation and mapping algorithms and embedded computers. I also hope that this project will showcase not only the above but also software best practices such as unit testing, documentation and continous integration. 
 
-
-[![picture of IndoorMapper with sensor labels](images/indoor_mapper.jpg)](https://www.youtube.com/embed/XvXK_vZ0BNw)
+![picture of IndoorMapper with sensor labels](images/indoor_mapper.jpg)
 
 
 ## Setup
